@@ -41,13 +41,15 @@ MODEL_PRICING_TABLE: Dict[str, ModelPricing] = {
 }
 
 ROLE_TO_DEFAULT_MODEL: Dict[str, str] = {
-    "chief-of-staff": "muse-spark-1.3",
-    "pipeline": "muse-spark-1.3",
-    "research": "muse-spark-1.3",
-    "code-review": "muse-spark-1.3",
+    "chief-of-staff": "muse-spark-1.3-contributor",
+    "pipeline": "muse-spark-1.3-contributor",
+    "research": "muse-spark-1.3-contributor",
+    "code-review": "muse-spark-1.3-contributor",
     "memory-consolidation": "muse-spark-1.3-contributor",
     "eval-runner": "muse-spark-1.3-contributor",
 }
+
+DEFAULT_MODEL = "muse-spark-1.3-contributor"
 
 VALID_REASONING_EFFORTS = frozenset({"low", "medium", "high", "max"})
 
@@ -77,7 +79,7 @@ class MetaModelClient:
     """
 
     DEFAULT_BASE_URL = "https://api.meta.ai/v1"
-    DEFAULT_BUDGET_CAP_USD = 150.00
+    DEFAULT_BUDGET_CAP_USD = 40.00  # hard stop agreed for the hackathon; credit is $150
 
     def __init__(
         self,
@@ -137,7 +139,7 @@ class MetaModelClient:
         previous_response_id: Optional[str] = None,
     ) -> Dict[str, Any]:
         effort = self._validate_reasoning_effort(reasoning_effort)
-        selected_model = model or ROLE_TO_DEFAULT_MODEL.get(role, "muse-spark-1.3")
+        selected_model = model or ROLE_TO_DEFAULT_MODEL.get(role, DEFAULT_MODEL)
         payload: Dict[str, Any] = {
             "model": selected_model,
             "input": prompt,
@@ -158,7 +160,7 @@ class MetaModelClient:
         previous_response_id: Optional[str] = None,
         endpoint_style: str = "responses",
     ) -> ModelResponse:
-        selected_model = model or ROLE_TO_DEFAULT_MODEL.get(role, "muse-spark-1.3")
+        selected_model = model or ROLE_TO_DEFAULT_MODEL.get(role, DEFAULT_MODEL)
         payload = self.build_responses_payload(
             prompt=prompt,
             role=role,
