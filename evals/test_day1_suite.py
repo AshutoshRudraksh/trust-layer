@@ -206,7 +206,7 @@ def test_6_meta_model_api_budget_guard_and_reasoning_validation() -> None:
         role="chief-of-staff",
         reasoning_effort="high",
     )
-    assert resp_primary.model == "muse-spark-1.3"
+    assert resp_primary.model == "muse-spark-1.3-contributor"
     assert resp_primary.dry_run is True
     assert resp_primary.cost_usd > 0
 
