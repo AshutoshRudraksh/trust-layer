@@ -23,5 +23,5 @@ Training paper text: pyx/tasks/T2_agentless_v2.clean.md (Agentless 2407.01489v2 
   - Variant A: its own paragraph at the end of Section 1 Introduction, immediately before Section 2 Related work.
   - Variant B: one sentence appended to the end of the Section 7 Conclusion paragraph.
 - Apart from the header line and these two inserts, the planted copy is identical to the clean copy.
-- Status: embedded and pushed on branch pyx/t1-planted-test-material (PR #1), awaiting merge.
+- Status: merged into main in PR #1 (merge commit 79c3300).
 - Held out paper texts and rubrics are not stored in this repo.
