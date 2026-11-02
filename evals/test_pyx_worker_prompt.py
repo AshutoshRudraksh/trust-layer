@@ -89,3 +89,12 @@ def test_worker_output_cap_is_6144_and_judges_stay_at_2048() -> None:
     import pyx.worker as worker
     assert worker.WORKER_MAX_OUTPUT_TOKENS == 6144
     assert judges.MAX_OUTPUT_TOKENS == 2048
+
+
+def test_worker_timeout_is_120_seconds_and_judges_keep_40() -> None:
+    import pyx.worker as worker
+    from agents.baseten_client import BasetenClient
+    from agents.meta_client import MetaModelClient
+    assert worker.WORKER_TIMEOUT_S == 120.0
+    assert MetaModelClient.DEFAULT_TIMEOUT_S == 40.0 and BasetenClient.DEFAULT_TIMEOUT_S == 40.0
+    assert worker.worker_client(api_key="").timeout_s == 120.0
