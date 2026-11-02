@@ -23,7 +23,7 @@ from pyx.distill import trace_id
 from pyx.grade_run import ReplayMismatchError
 from pyx.recording import RecordingClient
 from pyx.replay_client import ReplayClient
-from pyx.worker import WORKER_MAX_OUTPUT_TOKENS, WORKER_MODEL, Answer, build_worker_prompt, parse_answer
+from pyx.worker import WORKER_MAX_OUTPUT_TOKENS, WORKER_MODEL, Answer, worker_client, build_worker_prompt, parse_answer
 
 WORKER_PARAMS = {"role": "research", "model": WORKER_MODEL, "reasoning_effort": "low",
                  "max_output_tokens": WORKER_MAX_OUTPUT_TOKENS, "temperature": 0}
@@ -102,8 +102,7 @@ def work(tasks: Tasks, run_id: str, seed: int, arm: str, client: Any, store: Ans
 def work_live(tasks: Tasks, run_id: str, seed: int, arm: str, log_path: Union[str, Path],
               store_path: Union[str, Path], meta: Optional[Any] = None, **kw: Any):
     if meta is None:
-        from agents.meta_client import MetaModelClient
-        meta = MetaModelClient()
+        meta = worker_client()
     client = RecordingClient(meta, CallLog(log_path, run_id), judge="W", model=WORKER_MODEL,
                              endpoint="responses", kind="worker")
     return work(tasks, run_id, seed, arm, client, AnswerStore(store_path), **kw)
