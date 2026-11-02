@@ -82,3 +82,10 @@ def test_answer_record_names_its_inputs() -> None:
         Answer("r1", 0, "no_memory", "T1", "dirty", "text", "tid", WORKER_MODEL, ())
     with pytest.raises(NonMetaModelError):
         Answer("r1", 0, "no_memory", "T1", "clean", "text", "tid", "gpt-4o", ())
+
+
+def test_worker_output_cap_is_6144_and_judges_stay_at_2048() -> None:
+    import pyx.judges as judges
+    import pyx.worker as worker
+    assert worker.WORKER_MAX_OUTPUT_TOKENS == 6144
+    assert judges.MAX_OUTPUT_TOKENS == 2048
