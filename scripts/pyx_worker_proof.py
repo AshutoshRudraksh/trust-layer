@@ -3,7 +3,8 @@
   python3 scripts/pyx_worker_proof.py live LOG ANSWERS TSV      live calls, needs MODEL_API_KEY and BASETEN_API_KEY
   python3 scripts/pyx_worker_proof.py keyless LOG ANSWERS TSV   no key, no network: replays LOG
 
-Tasks: T1 clean, T1 planted, T2 clean; one seed; arm no_memory. Prints only
+Tasks: T1 clean, T1 planted, T2 clean; one seed; arm no_memory; worker cap 6144.
+Each grade row carries its answer's copy in decisions.tsv column 13. Prints only
 whether each key name is set, never a value. The live mode stops once new Meta
 spend passes $0.03 or new Baseten spend passes $0.05; a budget stop propagates.
 """
@@ -50,9 +51,9 @@ def live(log: str, answers: str, tsv: str) -> None:
         _, faults = work_live([task], RUN_ID, SEED, ARM, log, answers, meta=meta)
         print(f"  worker {task}: faults={faults}")
         _check_abort(ledger, start)
-    for pair in answers_for_grading(AnswerStore(answers), RUN_ID):
-        report = grade_live([pair], RUN_ID, log, meta=meta, baseten=baseten)[0]
-        DecisionLog(tsv).append(rows_from_grade(report, run_id=RUN_ID, seed=SEED))
+    for a in AnswerStore(answers).read():
+        report = grade_live([(a.task_id, a.answer_text)], RUN_ID, log, meta=meta, baseten=baseten)[0]
+        DecisionLog(tsv).append(rows_from_grade(report, run_id=RUN_ID, seed=SEED, copy=a.copy))
         _check_abort(ledger, start)
     for line in CallLog(log, RUN_ID).read():
         if line["kind"] != "checker":
@@ -67,9 +68,10 @@ def live(log: str, answers: str, tsv: str) -> None:
 def replay(log, answers, tsv) -> list:
     """Keyless: worker answers from the log, then grading from the log; any miss or unused line fails."""
     _, faults = work_keyless(TASKS, RUN_ID, SEED, ARM, log, answers)
+    stored = AnswerStore(answers).read()
     reports = grade_keyless(answers_for_grading(AnswerStore(answers), RUN_ID), log)
-    for report in reports:
-        DecisionLog(tsv).append(rows_from_grade(report, run_id=RUN_ID, seed=SEED))
+    for a, report in zip(stored, reports):
+        DecisionLog(tsv).append(rows_from_grade(report, run_id=RUN_ID, seed=SEED, copy=a.copy))
     return faults
 
 
