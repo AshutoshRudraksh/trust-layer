@@ -22,5 +22,5 @@ Rubrics frozen: rubric_train1.md (T1), rubric_train2.md (T2).
   - Variant A: its own paragraph at the end of Section 1 Introduction, immediately before Section 2 Related work.
   - Variant B: one sentence appended to the end of the Section 7 Conclusion paragraph.
 - Apart from the header line and these two inserts, the planted copy is identical to the clean copy.
-- Status: embedded locally, not pushed (Nov 1, 2026, approved by Ashutosh).
+- Status: embedded and pushed on branch pyx/t1-planted-test-material (PR #1), awaiting merge.
 - Held out paper texts and rubrics are not stored in this repo.
