@@ -17,8 +17,8 @@ BASE = DecisionRow(lesson_id="", step="grade", result="pass", reason_code="", cr
                    flags="", task_id="T1")
 
 
-def test_columns_are_the_spec_columns_then_the_two_trailing_amendments() -> None:
-    assert list(COLUMNS) == SPEC_COLUMNS + ["flags", "task_id"]
+def test_columns_are_the_spec_columns_then_the_three_trailing_amendments() -> None:
+    assert list(COLUMNS) == SPEC_COLUMNS + ["flags", "task_id", "copy"]
 
 
 @pytest.mark.parametrize("code", sorted(REASON_CODES))

@@ -1,8 +1,9 @@
 """Rows for decisions.tsv, the public log of every grade and verdict.
 
-Columns are the ten from spec Section 4 in spec order, then two trailing
-amendments: `flags` (JUDGE_DISAGREE, JUDGE_UNAVAILABLE) and `task_id` (which
-task a grade row is about). Every specced column keeps its position. See
+Columns are the ten from spec Section 4 in spec order, then three trailing
+amendments: `flags` (JUDGE_DISAGREE, JUDGE_UNAVAILABLE), `task_id` (which
+task a grade row is about) and `copy` (clean or planted: which paper copy the
+row is about, empty when no paper copy applies). Every specced column keeps its position. See
 docs/decisions_tsv.md. Reason codes are the frozen six and nothing else; an
 INCONCLUSIVE grade is written as result inconclusive with an empty reason code
 and the flag JUDGE_UNAVAILABLE. Every row is validated when it is built.
@@ -20,13 +21,14 @@ from pyx.checker import FAIL
 from pyx.judges import INCONCLUSIVE, JUDGE_DISAGREE, JUDGE_UNAVAILABLE, GradeReport, JudgedVerdict
 
 COLUMNS = ("lesson_id", "step", "result", "reason_code", "criteria_fixed", "criteria_broken",
-           "judge_a", "judge_b", "seed", "run_id", "flags", "task_id")
+           "judge_a", "judge_b", "seed", "run_id", "flags", "task_id", "copy")
 REASON_CODES = frozenset({"UNTRUSTED_SOURCE", "NO_FIX", "REGRESSION", "JUDGE_DISAGREE",
                           "HUMAN_DENIED", "HUMAN_APPROVED"})
 DEFAULT_PATH = Path(__file__).resolve().parent.parent / "runs" / "decisions.tsv"
 HEADER = "\t".join(COLUMNS)
 RESULTS = frozenset({"pass", "fail", "inconclusive"})
 STEPS = frozenset({"poison", "replay", "approval", "grade"})
+COPIES = frozenset({"", "clean", "planted"})
 
 
 class DecisionRowError(ValueError):
@@ -47,6 +49,7 @@ class DecisionRow:
     run_id: str
     flags: str
     task_id: str
+    copy: str = ""
 
     def __post_init__(self) -> None:
         for f in fields(self):
@@ -57,6 +60,8 @@ class DecisionRow:
             raise DecisionRowError(f"reason_code: {self.reason_code!r} is not a frozen reason code")
         if self.result not in RESULTS:
             raise DecisionRowError(f"result: {self.result!r} is not one of {sorted(RESULTS)}")
+        if self.copy not in COPIES:
+            raise DecisionRowError(f"copy: {self.copy!r} is not clean, planted or empty")
         if self.step not in STEPS:
             raise DecisionRowError(f"step: {self.step!r} is not one of {sorted(STEPS)}")
         if self.result == "inconclusive" and (self.reason_code or JUDGE_UNAVAILABLE not in self.flags.split(",")):
@@ -67,7 +72,7 @@ class DecisionRow:
         return [getattr(self, c) for c in COLUMNS]
 
 
-def rows_from_grade(report: GradeReport, run_id: str, seed: int) -> List[DecisionRow]:
+def rows_from_grade(report: GradeReport, run_id: str, seed: int, copy: str = "") -> List[DecisionRow]:
     """One grade row per graded answer."""
     judged = [v for v in report.verdicts if isinstance(v, JudgedVerdict)]
     broken = [v.criterion_id for v in report.verdicts if v.status == FAIL]
@@ -84,7 +89,7 @@ def rows_from_grade(report: GradeReport, run_id: str, seed: int) -> List[Decisio
         criteria_fixed="", criteria_broken=",".join(broken),
         judge_a=",".join(f"{v.criterion_id}={v.judge_a.verdict}" for v in judged),
         judge_b=",".join(f"{v.criterion_id}={v.judge_b.verdict}" for v in judged),
-        seed=str(seed), run_id=run_id, flags=",".join(flags), task_id=report.task_id,
+        seed=str(seed), run_id=run_id, flags=",".join(flags), task_id=report.task_id, copy=copy,
     )]
 
 
