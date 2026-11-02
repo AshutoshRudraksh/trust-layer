@@ -279,3 +279,45 @@ def test_baseten_429_backoff_and_missing_key(tmp_path: Path, monkeypatch: pytest
     monkeypatch.delenv("BASETEN_API_KEY", raising=False)
     with pytest.raises(RuntimeError, match="BASETEN_API_KEY"):
         BasetenClient(ledger=SpendLedger(tmp_path / "l2.json")).chat("x")
+
+
+# Meta reply parsing (regression: live run returned empty text)
+
+META_FIXTURE = Path(__file__).resolve().parent / "fixtures" / "pyx" / "meta_responses_reply.json"
+
+
+def test_meta_text_is_read_from_nested_output_items(tmp_path: Path) -> None:
+    raw = json.loads(META_FIXTURE.read_text())
+    assert "output_text" not in raw  # shape captured from a real responses call
+    seen: List[httpx.Request] = []
+    client = MetaModelClient(
+        api_key=FAKE_META_KEY,
+        ledger=SpendLedger(tmp_path / "l.json"),
+        transport=_transport(lambda r: httpx.Response(200, json=raw), seen),
+        sleep=lambda s: None,
+    )
+    resp = client.respond(prompt="x", role="eval-runner", reasoning_effort="low", max_output_tokens=512)
+    assert resp.output_text == "PASS"
+    assert resp.output_tokens == 106
+
+
+def test_meta_empty_final_text_raises_after_recording_spend(tmp_path: Path) -> None:
+    from agents.meta_client import EmptyReplyError
+
+    raw = json.loads(META_FIXTURE.read_text())
+    raw["output"] = [item for item in raw["output"] if item["type"] == "reasoning"]
+    raw["status"] = "incomplete"
+    raw["incomplete_details"] = {"reason": "max_output_tokens"}
+    raw["usage"]["output_tokens"] = 512
+    raw["usage"]["output_tokens_details"]["reasoning_tokens"] = 512
+    ledger_path = tmp_path / "l.json"
+    seen: List[httpx.Request] = []
+    client = MetaModelClient(
+        api_key=FAKE_META_KEY,
+        ledger=SpendLedger(ledger_path),
+        transport=_transport(lambda r: httpx.Response(200, json=raw), seen),
+        sleep=lambda s: None,
+    )
+    with pytest.raises(EmptyReplyError, match="max_output_tokens"):
+        client.respond(prompt="x", role="eval-runner", reasoning_effort="low", max_output_tokens=512)
+    assert SpendLedger(ledger_path).total_usd("meta") > 0
