@@ -15,6 +15,30 @@ from .tracing import TraceCollector
 LEDGER_PROVIDER = "meta"
 
 
+def _extract_output_text(data: Dict[str, Any]) -> str:
+    """Final text from either endpoint shape.
+
+    The responses endpoint puts text in output items of type "message", each
+    holding content parts of type "output_text"; "reasoning" items carry no
+    text. The chat completions endpoint puts it in choices[0].message.content.
+    """
+    if data.get("output_text"):
+        return str(data["output_text"])
+    parts: List[str] = []
+    for item in data.get("output") or []:
+        if item.get("type") != "message":
+            continue
+        for part in item.get("content") or []:
+            if part.get("type") == "output_text" and part.get("text"):
+                parts.append(str(part["text"]))
+    if parts:
+        return "".join(parts)
+    choices = data.get("choices") or []
+    if choices:
+        return str((choices[0].get("message") or {}).get("content") or "")
+    return ""
+
+
 def _first_count(usage: Dict[str, Any], keys: tuple, fallback: int) -> int:
     """First token count present in usage; a reported 0 is kept, not replaced."""
     for key in keys:
@@ -25,6 +49,10 @@ def _first_count(usage: Dict[str, Any], keys: tuple, fallback: int) -> int:
 
 class BudgetCapExceededError(RuntimeError):
     """Raised when an API call would exceed the $150.00 hackathon credit cap or when free credits are not yet applied."""
+
+
+class EmptyReplyError(RuntimeError):
+    """Raised when a live call is billed but carries no final message text."""
 
 
 class InvalidReasoningEffortError(ValueError):
@@ -270,9 +298,15 @@ class MetaModelClient:
             self.ledger.record(LEDGER_PROVIDER, call_id, actual_cost)
             self.cumulative_spend_usd = round(self.cumulative_spend_usd + actual_cost, 8)
 
-            output_text = data.get("output_text", "")
-            if not output_text and "choices" in data and data["choices"]:
-                output_text = data["choices"][0].get("message", {}).get("content", "")
+            output_text = _extract_output_text(data)
+            reasoning_tokens = int((usage.get("output_tokens_details") or {}).get("reasoning_tokens") or 0)
+            span.attributes["reasoning_tokens"] = reasoning_tokens
+            if not output_text.strip():
+                reason = (data.get("incomplete_details") or {}).get("reason") or data.get("status") or "unknown"
+                raise EmptyReplyError(
+                    f"Meta reply had no final text (status reason: {reason}; "
+                    f"output_tokens={out_tok}, reasoning_tokens={reasoning_tokens}, cap={max_output_tokens})."
+                )
 
             span.attributes["dry_run"] = False
             span.attributes["cost_usd"] = actual_cost
