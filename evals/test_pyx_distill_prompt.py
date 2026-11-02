@@ -1,6 +1,7 @@
 """PR E2 tests: the failure view handed to the distiller, the distill prompt and the reply parser."""
 from __future__ import annotations
 
+import re
 from dataclasses import replace
 from pathlib import Path
 
@@ -61,8 +62,8 @@ def test_prompt_carries_no_rubric_text_or_expected_values(task: str) -> None:
     for prompt in prompts:
         assert answer in prompt and "BEGIN UNTRUSTED ANSWER" in prompt
         outside_answer = prompt.replace(answer, "")  # the answer may itself quote numbers; only our text counts
-        for s in secrets:
-            assert str(s) not in outside_answer
+        for s in secrets:  # whole token match, so "8" does not hit the id "T2.C8"
+            assert not re.search(rf"(?<![\w.]){re.escape(str(s))}(?![\w])", outside_answer), s
 
 
 def test_parser_takes_the_lesson_line() -> None:
