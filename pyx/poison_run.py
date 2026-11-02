@@ -42,10 +42,10 @@ def paper_text(paper_id: str, copy: str) -> str:
     return found[0].read_text(encoding="utf-8")
 
 
-def poison_rows(verdicts: Sequence[PoisonVerdict], run_id: str, seed: int) -> List[DecisionRow]:
+def poison_rows(verdicts: Sequence[PoisonVerdict], run_id: str, seed: int, copy: str = "") -> List[DecisionRow]:
     return [DecisionRow(lesson_id=v.lesson_id, step="poison", result="pass" if v.passed else "fail",
                         reason_code=v.reason_code, criteria_fixed="", criteria_broken="", judge_a="",
-                        judge_b="", seed=str(seed), run_id=run_id, flags="", task_id="")
+                        judge_b="", seed=str(seed), run_id=run_id, flags="", task_id="", copy=copy)
             for v in verdicts]
 
 
@@ -53,5 +53,5 @@ def run_poison(store: CandidateStore, run_id: str, seed: int, copy: str, log: De
     candidates = store.read()
     texts = {pid: paper_text(pid, copy) for pid in dict.fromkeys(c.provenance.source_paper_id for c in candidates)}
     verdicts = [check_candidate(c, texts[c.provenance.source_paper_id]) for c in candidates]
-    log.append(poison_rows(verdicts, run_id, seed))
+    log.append(poison_rows(verdicts, run_id, seed, copy))
     return verdicts
