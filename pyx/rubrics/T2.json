@@ -1,0 +1,180 @@
+{
+  "task_id": "T2",
+  "paper": "2407.01489v2",
+  "split": "training",
+  "status": "frozen",
+  "frozen_on": "2026-11-01",
+  "approved_by": "Ashutosh",
+  "source_draft": "rubric_train2.md",
+  "criteria": [
+    {
+      "id": "T2.C1",
+      "type": "programmatic",
+      "check": "number",
+      "source": "Table 1",
+      "verdict": "PASS if the answer states Agentless (GPT-4o) resolves 96 of 300 SWE-bench Lite problems, 32.00%",
+      "expected_text": "96/300",
+      "expected": [
+        {
+          "value": "96",
+          "kind": "count",
+          "tolerance": 0
+        },
+        {
+          "value": "300",
+          "kind": "count",
+          "tolerance": 0
+        },
+        {
+          "value": "32.00",
+          "kind": "decimal",
+          "tolerance": 0.005
+        }
+      ]
+    },
+    {
+      "id": "T2.C2",
+      "type": "programmatic",
+      "check": "number",
+      "source": "Table 1",
+      "verdict": "PASS if the answer states average cost $0.70 and 78,166 average tokens per issue",
+      "expected_text": "0.70; 78,166",
+      "expected": [
+        {
+          "value": "0.70",
+          "kind": "decimal",
+          "tolerance": 0.005
+        },
+        {
+          "value": "78166",
+          "kind": "count",
+          "tolerance": 0
+        }
+      ]
+    },
+    {
+      "id": "T2.C3",
+      "type": "programmatic",
+      "check": "number",
+      "source": "Table 4",
+      "verdict": "PASS if the answer states patch selection goes 77 (majority voting) to 81 (+regression test) to 96 (+reproduction test), so reproduction tests add 15",
+      "expected_text": "+15",
+      "expected": [
+        {
+          "value": "77",
+          "kind": "count",
+          "tolerance": 0
+        },
+        {
+          "value": "81",
+          "kind": "count",
+          "tolerance": 0
+        },
+        {
+          "value": "96",
+          "kind": "count",
+          "tolerance": 0
+        },
+        {
+          "value": "15",
+          "kind": "count",
+          "tolerance": 0
+        }
+      ]
+    },
+    {
+      "id": "T2.C4",
+      "type": "programmatic",
+      "check": "number",
+      "source": "Table 3",
+      "verdict": "PASS if the answer states multi-samples (4 x 10) resolve 96 versus 88 for greedy location (40 samples), +8",
+      "expected_text": "+8",
+      "expected": [
+        {
+          "value": "96",
+          "kind": "count",
+          "tolerance": 0
+        },
+        {
+          "value": "88",
+          "kind": "count",
+          "tolerance": 0
+        },
+        {
+          "value": "8",
+          "kind": "count",
+          "tolerance": 0
+        }
+      ]
+    },
+    {
+      "id": "T2.C5",
+      "type": "programmatic",
+      "check": "number",
+      "source": "Table 2",
+      "verdict": "PASS if the answer states combined file level localization contains ground truth 81.67% versus 78.67% prompting based, +3.00 points",
+      "expected_text": "3.00",
+      "expected": [
+        {
+          "value": "81.67",
+          "kind": "decimal",
+          "tolerance": 0.005
+        },
+        {
+          "value": "78.67",
+          "kind": "decimal",
+          "tolerance": 0.005
+        },
+        {
+          "value": "3.00",
+          "kind": "decimal",
+          "tolerance": 0.005
+        }
+      ]
+    },
+    {
+      "id": "T2.C6",
+      "type": "programmatic",
+      "check": "components",
+      "source": "Figure 1, Section 3",
+      "verdict": "PASS if the answer names the three phases: localization, repair, patch validation",
+      "expected_text": "count 3",
+      "expected": [],
+      "components": [
+        "localization",
+        "repair",
+        "patch validation"
+      ],
+      "count": 3
+    },
+    {
+      "id": "T2.C7",
+      "type": "programmatic",
+      "check": "number",
+      "source": "Table 6",
+      "verdict": "PASS if the answer states SWE-bench Verified result 194 (38.80%)",
+      "expected_text": "194",
+      "expected": [
+        {
+          "value": "194",
+          "kind": "count",
+          "tolerance": 0
+        },
+        {
+          "value": "38.80",
+          "kind": "decimal",
+          "tolerance": 0.005
+        }
+      ]
+    },
+    {
+      "id": "T2.C8",
+      "type": "judged",
+      "check": "judged",
+      "source": "Table 2, Section 5.2",
+      "verdict": "PASS if the answer explains why skeleton format beats complete file for related element localization (58.33% vs 53.67%, $0.02 vs $0.15, shorter context)",
+      "expected_text": "judged",
+      "expected": []
+    }
+  ]
+}
