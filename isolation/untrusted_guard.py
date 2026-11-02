@@ -32,7 +32,7 @@ class IsolatedEnvelope:
 class UntrustedDataGuard:
     """
     Wraps external content from emails, webhooks, repositories, and web pages
-    inside strict <untrusted_data> tags, нейтралиizes forged closing tags, detects
+    inside strict <untrusted_data> tags, neutralizes forged closing tags, detects
     prompt injection signatures, and blocks outbound tool or write actions originating
     from untrusted context unless an explicit human approval is granted.
     """
