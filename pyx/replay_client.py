@@ -35,9 +35,9 @@ class ReplayResponse:
 
 
 class ReplayClient:
-    def __init__(self, lines: List[Dict[str, Any]], judge: str) -> None:
+    def __init__(self, lines: List[Dict[str, Any]], judge: str, kind: str = "judge") -> None:
         self.judge = judge
-        self._lines = [l for l in lines if l.get("kind") == "judge" and l.get("judge") == judge]
+        self._lines = [l for l in lines if l.get("kind") == kind and l.get("judge") == judge]
         self.model = self._lines[0]["model"] if self._lines else ""
         self.endpoint = self._lines[0]["endpoint"] if self._lines else ""
         self._served: set = set()
