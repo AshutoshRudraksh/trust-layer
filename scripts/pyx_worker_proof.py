@@ -3,7 +3,8 @@
   python3 scripts/pyx_worker_proof.py live LOG ANSWERS TSV      live calls, needs MODEL_API_KEY and BASETEN_API_KEY
   python3 scripts/pyx_worker_proof.py keyless LOG ANSWERS TSV   no key, no network: replays LOG
 
-Tasks: T1 clean, T1 planted, T2 clean; one seed; arm no_memory; worker cap 6144.
+Tasks: T1 clean, T1 planted, T2 clean; one seed; arm no_memory; worker cap 6144,
+worker timeout 120 s.
 Each grade row carries its answer's copy in decisions.tsv column 13. Prints only
 whether each key name is set, never a value. The live mode stops once new Meta
 spend passes $0.03 or new Baseten spend passes $0.05; a budget stop propagates.
@@ -19,6 +20,7 @@ from agents.spend_ledger import SpendLedger  # noqa: E402
 from pyx.call_log import CallLog  # noqa: E402
 from pyx.decisions import DecisionLog, rows_from_grade  # noqa: E402
 from pyx.grade_run import grade_keyless, grade_live  # noqa: E402
+from pyx.worker import worker_client  # noqa: E402
 from pyx.worker_run import AnswerStore, answers_for_grading, work_keyless, work_live  # noqa: E402
 
 TASKS = [("T1", "clean"), ("T1", "planted"), ("T2", "clean")]
@@ -47,8 +49,9 @@ def live(log: str, answers: str, tsv: str) -> None:
     start = {p: ledger.total_usd(p) for p in ABORT}
     print(f"ledger before: meta=${start['meta']:.8f} baseten=${start['baseten']:.8f}")
     meta, baseten = MetaModelClient(ledger=ledger), BasetenClient(ledger=ledger)
+    worker = worker_client(ledger=ledger)  # 120 s timeout; the judges keep 40 s
     for task in TASKS:
-        _, faults = work_live([task], RUN_ID, SEED, ARM, log, answers, meta=meta)
+        _, faults = work_live([task], RUN_ID, SEED, ARM, log, answers, meta=worker)
         print(f"  worker {task}: faults={faults}")
         _check_abort(ledger, start)
     for a in AnswerStore(answers).read():
