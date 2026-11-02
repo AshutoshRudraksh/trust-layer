@@ -10,3 +10,6 @@ venv/
 dist/
 build/
 *.egg-info/
+
+# Pyx run artifacts, including the persistent spend ledger
+runs/
