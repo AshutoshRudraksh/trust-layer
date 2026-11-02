@@ -9,8 +9,12 @@ and the flag JUDGE_UNAVAILABLE. Every row is validated when it is built.
 """
 from __future__ import annotations
 
+import fcntl
+import os
+import tempfile
 from dataclasses import dataclass, fields
-from typing import List
+from pathlib import Path
+from typing import List, Optional, Sequence, Union
 
 from pyx.checker import FAIL
 from pyx.judges import INCONCLUSIVE, JUDGE_DISAGREE, JUDGE_UNAVAILABLE, GradeReport, JudgedVerdict
@@ -19,6 +23,8 @@ COLUMNS = ("lesson_id", "step", "result", "reason_code", "criteria_fixed", "crit
            "judge_a", "judge_b", "seed", "run_id", "flags", "task_id")
 REASON_CODES = frozenset({"UNTRUSTED_SOURCE", "NO_FIX", "REGRESSION", "JUDGE_DISAGREE",
                           "HUMAN_DENIED", "HUMAN_APPROVED"})
+DEFAULT_PATH = Path(__file__).resolve().parent.parent / "runs" / "decisions.tsv"
+HEADER = "\t".join(COLUMNS)
 RESULTS = frozenset({"pass", "fail", "inconclusive"})
 STEPS = frozenset({"poison", "replay", "approval", "grade"})
 
@@ -80,3 +86,63 @@ def rows_from_grade(report: GradeReport, run_id: str, seed: int) -> List[Decisio
         judge_b=",".join(f"{v.criterion_id}={v.judge_b.verdict}" for v in judged),
         seed=str(seed), run_id=run_id, flags=",".join(flags), task_id=report.task_id,
     )]
+
+
+class DecisionLog:
+    """decisions.tsv on disk. Appends run under an flock and replace the file by
+    temp file, fsync and rename, so a crash leaves the old file whole. A row
+    identical in every column to one already present is skipped. A file whose
+    header differs from COLUMNS is refused, never rewritten."""
+
+    def __init__(self, path: Optional[Union[str, Path]] = None) -> None:
+        self.path = Path(path) if path is not None else DEFAULT_PATH
+
+    def _lines(self) -> List[str]:
+        if not self.path.exists():
+            return []
+        lines = self.path.read_text(encoding="utf-8").split("\n")
+        if lines and lines[-1] == "":
+            lines.pop()
+        if lines and lines[0] != HEADER:
+            raise DecisionRowError(f"header: {self.path} does not start with the decisions.tsv header")
+        return lines[1:]
+
+    def read(self) -> List[DecisionRow]:
+        rows = []
+        for number, line in enumerate(self._lines(), start=2):
+            parts = line.split("\t")
+            try:
+                if len(parts) != len(COLUMNS):
+                    raise DecisionRowError(f"has {len(parts)} columns, expected {len(COLUMNS)}")
+                rows.append(DecisionRow(*parts))
+            except DecisionRowError as exc:
+                raise DecisionRowError(f"line {number}: {exc}") from exc
+        return rows
+
+    def append(self, rows: Sequence[DecisionRow]) -> int:
+        """Write rows not already present; returns how many were added."""
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        with open(self.path.with_name(self.path.name + ".lock"), "a") as lock:
+            fcntl.flock(lock, fcntl.LOCK_EX)
+            existing = self._lines()
+            seen = set(existing)
+            new = []
+            for row in rows:
+                line = "\t".join(row.values())
+                if line not in seen:
+                    seen.add(line)
+                    new.append(line)
+            if not new:
+                return 0
+            fd, tmp = tempfile.mkstemp(prefix=".decisions.", suffix=".tmp", dir=str(self.path.parent))
+            try:
+                with os.fdopen(fd, "w", encoding="utf-8") as fh:
+                    fh.write("\n".join([HEADER, *existing, *new]) + "\n")
+                    fh.flush()
+                    os.fsync(fh.fileno())
+                os.replace(tmp, self.path)
+            except BaseException:
+                if os.path.exists(tmp):
+                    os.unlink(tmp)
+                raise
+            return len(new)
