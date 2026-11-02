@@ -102,3 +102,8 @@ def test_number_evidence_reports_matched_text_offset_and_missing_values() -> Non
     evidence = {e.target: e for e in verdict.evidence}
     assert evidence["10.9"].matched_text == "10.90" and evidence["10.9"].offset == 8
     assert evidence["91.0"].found is False and evidence["91.0"].offset is None
+
+
+def test_list_comma_is_not_part_of_a_number() -> None:
+    [verdict] = check_answer("gives 77, then 81", _rubric_with("number", values=["77", "81"]))
+    assert [e.matched_text for e in verdict.evidence] == ["77", "81"]
