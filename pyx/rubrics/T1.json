@@ -1,0 +1,164 @@
+{
+  "task_id": "T1",
+  "paper": "2303.11366v4",
+  "split": "training",
+  "status": "frozen",
+  "frozen_on": "2026-11-01",
+  "approved_by": "Ashutosh",
+  "source_draft": "rubric_train1.md",
+  "criteria": [
+    {
+      "id": "T1.C1",
+      "type": "programmatic",
+      "check": "number",
+      "source": "Table 1",
+      "verdict": "PASS if the answer states Reflexion HumanEval (PY) Pass@1 is 91.0 versus 80.1 for GPT-4, a gain of 10.9 points",
+      "expected_text": "10.9",
+      "expected": [
+        {
+          "value": "91.0",
+          "kind": "decimal",
+          "tolerance": 0.05
+        },
+        {
+          "value": "80.1",
+          "kind": "decimal",
+          "tolerance": 0.05
+        },
+        {
+          "value": "10.9",
+          "kind": "decimal",
+          "tolerance": 0.05
+        }
+      ]
+    },
+    {
+      "id": "T1.C2",
+      "type": "programmatic",
+      "check": "number",
+      "source": "Table 1",
+      "verdict": "PASS if the answer states Leetcode Hard (PY) Pass@1 rises from 7.5 (GPT-4) to 15.0, i.e. doubles",
+      "expected_text": "2x",
+      "expected": [
+        {
+          "value": "7.5",
+          "kind": "decimal",
+          "tolerance": 0.05
+        },
+        {
+          "value": "15.0",
+          "kind": "decimal",
+          "tolerance": 0.05
+        }
+      ]
+    },
+    {
+      "id": "T1.C3",
+      "type": "programmatic",
+      "check": "number",
+      "source": "Table 3",
+      "verdict": "PASS if the answer states omitting test generation drops Pass@1 from 0.60 (base) to 0.52, while full Reflexion reaches 0.68",
+      "expected_text": "drop 0.08",
+      "expected": [
+        {
+          "value": "0.60",
+          "kind": "decimal",
+          "tolerance": 0.005
+        },
+        {
+          "value": "0.52",
+          "kind": "decimal",
+          "tolerance": 0.005
+        },
+        {
+          "value": "0.68",
+          "kind": "decimal",
+          "tolerance": 0.005
+        }
+      ]
+    },
+    {
+      "id": "T1.C4",
+      "type": "programmatic",
+      "check": "number",
+      "source": "Table 5",
+      "verdict": "PASS if the answer identifies ReAct + text-davinci-003 as the largest HotPotQA gain, 0.30 to 0.55 (+0.25)",
+      "expected_text": "+0.25",
+      "expected": [
+        {
+          "value": "0.30",
+          "kind": "decimal",
+          "tolerance": 0.005
+        },
+        {
+          "value": "0.55",
+          "kind": "decimal",
+          "tolerance": 0.005
+        },
+        {
+          "value": "0.25",
+          "kind": "decimal",
+          "tolerance": 0.005
+        }
+      ]
+    },
+    {
+      "id": "T1.C5",
+      "type": "programmatic",
+      "check": "number",
+      "source": "Table 2",
+      "verdict": "PASS if the answer notes MBPP (PY) is the only row where Reflexion (0.77) is below base (0.80)",
+      "expected_text": "0.80 vs 0.77",
+      "expected": [
+        {
+          "value": "0.77",
+          "kind": "decimal",
+          "tolerance": 0.005
+        },
+        {
+          "value": "0.80",
+          "kind": "decimal",
+          "tolerance": 0.005
+        }
+      ]
+    },
+    {
+      "id": "T1.C6",
+      "type": "programmatic",
+      "check": "components",
+      "source": "Figure 2, Section 3",
+      "verdict": "PASS if the answer names the three models in the architecture: Actor, Evaluator, Self-reflection",
+      "expected_text": "count 3",
+      "expected": [],
+      "components": [
+        "Actor",
+        "Evaluator",
+        "Self-reflection"
+      ],
+      "count": 3
+    },
+    {
+      "id": "T1.C7",
+      "type": "programmatic",
+      "check": "components",
+      "source": "Figure 2, Section 3",
+      "verdict": "PASS if the answer names both memories: trajectory as short term memory, self reflections as long term memory",
+      "expected_text": "2 named",
+      "expected": [],
+      "components": [
+        "short term memory",
+        "long term memory"
+      ],
+      "count": 2
+    },
+    {
+      "id": "T1.C8",
+      "type": "judged",
+      "check": "judged",
+      "source": "Table 2, Section 4.3",
+      "verdict": "PASS if the answer explains the MBPP regression by false positive self generated tests (FP 0.16 on MBPP PY)",
+      "expected_text": "judged",
+      "expected": []
+    }
+  ]
+}
