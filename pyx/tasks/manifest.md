@@ -15,6 +15,7 @@ License for all eight: CC BY 4.0, http://creativecommons.org/licenses/by/4.0/ (l
 
 Held out papers H1 to H4 and any rubrics for them are never shown to the worker or the distiller.
 Rubrics frozen: rubric_train1.md (T1), rubric_train2.md (T2).
+Training paper text: pyx/tasks/T2_agentless_v2.clean.md (Agentless 2407.01489v2 converted to markdown from the arXiv HTML, CC BY 4.0 attribution header). No planted copy is made for T2.
 
 ## Planted test material
 - Clean copy: pyx/tasks/T1_reflexion_v4.clean.md (Reflexion 2303.11366v4 converted to markdown, CC BY 4.0 attribution header).

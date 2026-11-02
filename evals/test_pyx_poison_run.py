@@ -15,7 +15,6 @@ from pyx.poison_run import PaperTextMissingError, UnknownPaperError, paper_text,
 ROOT = Path(__file__).resolve().parent.parent
 E4 = CandidateStore(ROOT / "evals" / "fixtures" / "pyx" / "replay" / "e4_distill_candidates.jsonl").read()
 T1 = [c for c in E4 if c.provenance.source_paper_id == "2303.11366v4"]
-T2 = [c for c in E4 if c.provenance.source_paper_id == "2407.01489v2"]
 TEXT = "Name the table each number comes from."
 LID = make_lesson_id("T1.C1", TEXT)
 DOC = Candidate(Lesson(LID, TEXT, "paper_anatomy", "tr", "T1.C1", "candidate", 1),
@@ -28,9 +27,10 @@ def test_t1_paper_id_resolves_to_the_named_copy() -> None:
     assert paper_text("2303.11366v4", copy="planted") == (tasks / "T1_reflexion_v4.planted.md").read_text(encoding="utf-8")
 
 
-def test_a_manifest_paper_with_no_text_in_the_repo_raises() -> None:
-    with pytest.raises(PaperTextMissingError, match="2407.01489v2"):
-        paper_text("2407.01489v2", copy="clean")
+def test_t2_resolves_and_a_manifest_paper_with_no_text_in_the_repo_raises() -> None:
+    assert paper_text("2407.01489v2", copy="clean").startswith('Attribution: "Agentless')
+    with pytest.raises(PaperTextMissingError, match="2210.03629v3"):
+        paper_text("2210.03629v3", copy="clean")
 
 
 def test_an_unknown_paper_id_raises() -> None:
@@ -62,7 +62,8 @@ def test_run_writes_one_row_per_candidate_and_a_rerun_adds_nothing(tmp_path) -> 
 
 def test_a_candidate_with_no_paper_text_stops_the_run_before_any_row(tmp_path) -> None:
     store = CandidateStore(tmp_path / "c.jsonl")
-    for c in T1 + T2:
+    t3 = replace(DOC.provenance, source_paper_id="2210.03629v3", source_kind="graded_failure")
+    for c in T1 + [Candidate(DOC.lesson, t3)]:
         store.append(c)
     log = DecisionLog(tmp_path / "decisions.tsv")
     with pytest.raises(PaperTextMissingError):
