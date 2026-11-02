@@ -10,11 +10,15 @@ criterion on it is inconclusive. Tracing is not in this path.
 """
 from __future__ import annotations
 
+import argparse
 import hashlib
+import sys
 from collections import defaultdict
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, List, Optional, Sequence, TextIO, Tuple, Union
 
+from gate.approval_gate import ApprovalGate, DenialLockError
+from pyx.approval import OWNER, approval_text, decide, propose
 from pyx.arms import ArmContext, earned_ids, no_memory
 from pyx.checker import FAIL, PASS
 from pyx.decisions import DecisionLog, DecisionRow, rows_from_grade
@@ -22,11 +26,13 @@ from pyx.call_log import CallLog
 from pyx.grade_run import ReplayMismatchError, grade_keyless, grade_live
 from pyx.replay_client import ReplayClient
 from pyx.judges import INCONCLUSIVE, JUDGE_DISAGREE, MALFORMED, JudgedVerdict, self_agreement
-from pyx.lessons import Candidate
+from pyx.lessons import Candidate, CandidateStore
 from pyx.worker import Answer
 from pyx.worker_run import AnswerStore, work, work_live
 
 EVAL_PATH = Path(__file__).resolve().parent.parent / "EVAL.md"
+GATE_DB = Path(__file__).resolve().parent.parent / "runs" / "approvals.sqlite"
+WORDS = {"approve": "APPROVED", "deny": "DENIED"}
 PathLike = Union[str, Path]
 
 
@@ -117,3 +123,62 @@ def planted_earned(candidates: Sequence[Candidate], rows: Sequence[DecisionRow],
     planted = {a.trace_id for a in answers if a.copy == "planted"}
     earned = earned_ids(rows)
     return [c for c in candidates if c.lesson.lesson_id in earned and c.lesson.created_from_trace_id in planted]
+
+
+def _approve(args: Any, stdin: TextIO, out: TextIO) -> int:
+    try:
+        cands = CandidateStore(args.candidates).read()
+        rows = DecisionLog(args.decisions).read()
+    except (OSError, ValueError) as err:
+        print(f"bad input: {err}", file=out)
+        return 3
+    decided = {r.lesson_id for r in rows if r.step == "approval"}
+    passed = {(r.lesson_id, r.step) for r in rows if r.result == "pass"}
+    gate = ApprovalGate(db_path=args.gate_db)
+    print(f"gate db {args.gate_db}", file=out)
+    for cand in sorted(cands, key=lambda c: c.lesson.lesson_id):
+        lid, sha = cand.lesson.lesson_id, cand.provenance.text_sha256
+        if lid in decided or not {(lid, "poison"), (lid, "replay")} <= passed:
+            continue
+        replay = next(r for r in rows if r.lesson_id == lid and r.step == "replay" and r.result == "pass")
+        print(approval_text(cand, replay), file=out)
+        print("Type approve or deny:", file=out)
+        word = stdin.readline().strip().lower()
+        if word not in WORDS:
+            print(f"{lid} skipped, nothing written", file=out)
+            continue
+        try:
+            record = propose(gate, cand, rows, f"approve_{lid}_{sha[:8]}")
+        except DenialLockError:
+            print(f"{lid} locked after a denial, nothing written", file=out)
+            continue
+        row = decide(gate, record, cand, WORDS[word], OWNER, args.run_id, 0)
+        DecisionLog(args.decisions).append([row])
+        print(f"{lid} {row.reason_code}", file=out)
+    return 0
+
+
+def main(argv: Optional[Sequence[str]] = None, stdin: TextIO = sys.stdin, out: TextIO = sys.stdout) -> int:
+    parser = argparse.ArgumentParser(prog="python -m pyx.run")
+    sub = parser.add_subparsers(dest="command", required=True)
+    for name in ("approve", "check-eval"):
+        p = sub.add_parser(name)
+        p.add_argument("--eval", default=str(EVAL_PATH))
+        p.add_argument("--eval-sha256", default="")
+    ap = sub.choices["approve"]
+    ap.add_argument("--candidates", required=True)
+    ap.add_argument("--decisions", required=True)
+    ap.add_argument("--gate-db", default=str(GATE_DB))
+    ap.add_argument("--run-id", required=True)
+    args = parser.parse_args(argv)
+    try:
+        actual = check_frozen(args.eval, args.eval_sha256)
+    except EvalNotFrozenError as err:
+        print(f"refused: {err}", file=out)
+        return 2
+    print(f"EVAL frozen, sha256 {actual}", file=out)
+    return _approve(args, stdin, out) if args.command == "approve" else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

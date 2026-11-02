@@ -13,3 +13,4 @@ build/
 
 # Pyx run artifacts, including the persistent spend ledger
 runs/
+*.sqlite
