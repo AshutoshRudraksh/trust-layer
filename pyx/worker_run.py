@@ -23,10 +23,10 @@ from pyx.distill import trace_id
 from pyx.grade_run import ReplayMismatchError
 from pyx.recording import RecordingClient
 from pyx.replay_client import ReplayClient
-from pyx.worker import WORKER_MODEL, Answer, build_worker_prompt, parse_answer
+from pyx.worker import WORKER_MAX_OUTPUT_TOKENS, WORKER_MODEL, Answer, build_worker_prompt, parse_answer
 
 WORKER_PARAMS = {"role": "research", "model": WORKER_MODEL, "reasoning_effort": "low",
-                 "max_output_tokens": 2048, "temperature": 0}
+                 "max_output_tokens": WORKER_MAX_OUTPUT_TOKENS, "temperature": 0}
 Tasks = Sequence[Tuple[str, str]]  # (task_id, copy)
 
 
