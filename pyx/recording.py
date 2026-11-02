@@ -22,8 +22,8 @@ _LOGGED_FAULTS = (EmptyReplyError, RateLimitedError)
 
 class RecordingClient:
     def __init__(self, inner: Any, log: CallLog, *, judge: str, model: str, endpoint: str,
-                 held_out: bool = False) -> None:
-        self._inner, self._log = inner, log
+                 held_out: bool = False, kind: str = "judge") -> None:
+        self._inner, self._log, self._kind = inner, log, kind
         self._judge, self._model, self._endpoint, self._held_out = judge, model, endpoint, held_out
 
     def __getattr__(self, name: str) -> Any:
@@ -36,7 +36,7 @@ class RecordingClient:
 
     def _call(self, method: str, prompt: str, **kwargs: Any) -> Any:
         common = dict(judge=self._judge, model=self._model, endpoint=self._endpoint, params=kwargs,
-                      prompt=prompt, held_out=self._held_out)
+                      prompt=prompt, held_out=self._held_out, kind=self._kind)
         start = time.monotonic()
         try:
             resp = getattr(self._inner, method)(prompt, **kwargs)

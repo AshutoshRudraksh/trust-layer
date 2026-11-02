@@ -1,4 +1,4 @@
-"""Append only JSONL log of every judge and checker call in a grading run.
+"""Append only JSONL log of every judge, checker and distill call in a run.
 
 One line per judge call attempt (retries and errors included) and one line per
 checker pass. A keyless rerun serves judge replies from these lines by their
@@ -88,9 +88,10 @@ class CallLog:
 
     def append_judge(self, *, judge: str, model: str, endpoint: str, params: Dict[str, Any], prompt: str,
                      reply: str, outcome: str, input_tokens: int, output_tokens: int, reasoning_tokens: int,
-                     cost_usd: float, latency_s: float, error: str = "", held_out: bool = False) -> Dict[str, Any]:
+                     cost_usd: float, latency_s: float, error: str = "", held_out: bool = False,
+                     kind: str = "judge") -> Dict[str, Any]:
         return self._append({
-            "kind": "judge", "judge": judge, "model": model, "endpoint": endpoint, "params": params,
+            "kind": kind, "judge": judge, "model": model, "endpoint": endpoint, "params": params,
             "key": replay_key(judge, model, endpoint, prompt, params), "prompt_sha256": _sha256(prompt),
             "prompt": None if held_out else prompt, "held_out": held_out, "reply": reply,
             "outcome": outcome, "error": error, "input_tokens": input_tokens, "output_tokens": output_tokens,
