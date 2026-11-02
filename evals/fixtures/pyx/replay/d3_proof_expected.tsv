@@ -1,0 +1,5 @@
+lesson_id	step	result	reason_code	criteria_fixed	criteria_broken	judge_a	judge_b	seed	run_id	flags	task_id
+	grade	pass				T1.C8=PASS	T1.C8=PASS	0	d3_proof		T1
+	grade	fail			T1.C1,T1.C3,T1.C6,T1.C8	T1.C8=FAIL	T1.C8=FAIL	0	d3_proof		T1
+	grade	pass				T2.C8=PASS	T2.C8=PASS	0	d3_proof		T2
+	grade	fail			T2.C2,T2.C3,T2.C6,T2.C8	T2.C8=FAIL	T2.C8=FAIL	0	d3_proof		T2
