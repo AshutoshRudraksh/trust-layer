@@ -121,3 +121,11 @@ print("ok")
     out = subprocess.run([sys.executable, "-c", code], cwd=ROOT, env=env, capture_output=True, text=True)
     assert out.stdout.strip() == "ok", out.stderr
     assert "agents.tracing" not in (ROOT / "pyx" / "worker_run.py").read_text()
+
+
+def test_live_default_client_is_the_worker_client(tmp_path, monkeypatch) -> None:
+    import pyx.worker_run as worker_run
+    fake = Fake(["answer"])
+    monkeypatch.setattr(worker_run, "worker_client", lambda: fake)
+    work_live(TASKS[:1], "r1", 0, "no_memory", tmp_path / "log.jsonl", tmp_path / "answers.jsonl")
+    assert len(fake.calls) == 1
