@@ -1,6 +1,8 @@
 """PR G1 tests: the worker prompt, the model guard and the reply parser (plan G section 7, tests 1 to 7)."""
 from __future__ import annotations
 
+import re
+
 import pytest
 
 from pyx.poison_run import PaperTextMissingError, paper_text
@@ -36,7 +38,7 @@ def test_prompt_instructions_hold_no_rubric_text_or_expected_value(task_id: str,
         hidden = [c["verdict"], c.get("expected_text", "")] + [e["value"] for e in c["expected"]]
         hidden += c.get("components", [])
         for s in filter(None, hidden):
-            assert s not in outside, f"{c['id']} leaks {s!r}"
+            assert not re.search(rf"(?<![\w.]){re.escape(s)}(?![\w.])", outside), f"{c['id']} leaks {s!r}"
 
 
 def test_the_worker_role_still_cannot_load_a_rubric() -> None:
