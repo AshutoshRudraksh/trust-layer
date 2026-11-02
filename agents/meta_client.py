@@ -215,6 +215,7 @@ class MetaModelClient:
         max_output_tokens: int = 1024,
         previous_response_id: Optional[str] = None,
         endpoint_style: str = "responses",
+        temperature: Optional[float] = None,
     ) -> ModelResponse:
         selected_model = model or ROLE_TO_DEFAULT_MODEL.get(role, DEFAULT_MODEL)
         payload = self.build_responses_payload(
@@ -279,7 +280,11 @@ class MetaModelClient:
                     "max_tokens": max_output_tokens,
                 }
             else:
-                request_body = payload
+                request_body = dict(payload)
+            # Sent only when given. A live probe on 2026-11-01 showed the
+            # responses endpoint accepts temperature 0 and echoes it back.
+            if temperature is not None:
+                request_body["temperature"] = temperature
 
             with httpx.Client(timeout=self.timeout_s, transport=self._transport) as client:
                 resp = post_with_backoff(
