@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from typing import Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 from isolation.untrusted_guard import UntrustedDataGuard
 from pyx.poison_run import COPIES, TASKS, paper_text
@@ -21,6 +21,9 @@ WORKER_MODEL = "muse-spark-1.3-contributor"
 # Raised from 2048 after the first G3 live run: all three answers stopped at 2048 output tokens
 # mid table or mid sentence. Judges keep their own 2048 cap (pyx/judges.py).
 WORKER_MAX_OUTPUT_TOKENS = 6144
+# Raised from the judges' 40 s after the second G3 live run: the T2 worker call (about 24,600 input
+# tokens) timed out at 40 s. Judges keep MetaModelClient.DEFAULT_TIMEOUT_S and BasetenClient's 40 s.
+WORKER_TIMEOUT_S = 120.0
 META_MODELS = frozenset({WORKER_MODEL})
 _ROW = re.compile(r"^\|\s*([TH]\d+)\s*\|([^|]*)\|([^|]*)\|([^|]*)\|[^|]*\|([^|]*)\|([^|]*)\|", re.M)
 
@@ -51,6 +54,12 @@ class Answer:
         if self.copy not in COPIES:
             raise ValueError(f"copy {self.copy!r} is not one of {sorted(COPIES)}")
         check_model(self.model)
+
+
+def worker_client(**kwargs: Any) -> Any:
+    """The Meta client for worker calls, with the worker timeout; judges build their own clients."""
+    from agents.meta_client import MetaModelClient
+    return MetaModelClient(timeout_s=WORKER_TIMEOUT_S, **kwargs)
 
 
 def manifest_row(task_id: str) -> Dict[str, str]:
