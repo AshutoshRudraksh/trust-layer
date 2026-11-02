@@ -102,7 +102,8 @@ def test_worker_runs_open_no_connection_and_build_no_trace_collector(tmp_path) -
     code = f"""
 import socket, sys
 def refuse(*a, **k): raise AssertionError("network")
-socket.socket = socket.create_connection = refuse
+socket.socket.connect = socket.socket.connect_ex = refuse
+socket.create_connection = refuse
 import agents.tracing as t
 def no_tracer(*a, **k): raise AssertionError("TraceCollector built")
 t.TraceCollector.__init__ = no_tracer
