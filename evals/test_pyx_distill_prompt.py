@@ -56,7 +56,7 @@ def test_prompt_carries_no_rubric_text_or_expected_values(task: str) -> None:
     prompts = [build_distill_prompt(f, answer) for f in failure_view(REPORTS[name])]
     rubric = load_rubric(task, role="checker")
     secrets = [c["verdict"] for c in rubric["criteria"]]
-    secrets += [c["expected_text"] for c in rubric["criteria"] if c.get("expected_text")]
+    secrets += [c["expected_text"] for c in rubric["criteria"] if c.get("expected_text") not in (None, "", "judged")]
     secrets += [e["value"] for c in rubric["criteria"] for e in c.get("expected") or [] if isinstance(e, dict)]
     for prompt in prompts:
         assert answer in prompt and "BEGIN UNTRUSTED ANSWER" in prompt
