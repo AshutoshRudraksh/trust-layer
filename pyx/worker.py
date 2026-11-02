@@ -18,6 +18,9 @@ from isolation.untrusted_guard import UntrustedDataGuard
 from pyx.poison_run import COPIES, TASKS, paper_text
 
 WORKER_MODEL = "muse-spark-1.3-contributor"
+# Raised from 2048 after the first G3 live run: all three answers stopped at 2048 output tokens
+# mid table or mid sentence. Judges keep their own 2048 cap (pyx/judges.py).
+WORKER_MAX_OUTPUT_TOKENS = 6144
 META_MODELS = frozenset({WORKER_MODEL})
 _ROW = re.compile(r"^\|\s*([TH]\d+)\s*\|([^|]*)\|([^|]*)\|([^|]*)\|[^|]*\|([^|]*)\|([^|]*)\|", re.M)
 
