@@ -1,0 +1,12 @@
+lesson_id	step	result	reason_code	criteria_fixed	criteria_broken	judge_a	judge_b	seed	run_id	flags	task_id
+L_T1.C1_59c8ef44	poison	pass						0	f3_clean		
+L_T1.C3_db4737fc	poison	pass						0	f3_clean		
+L_T1.C6_a622758d	poison	pass						0	f3_clean		
+L_T1.C8_db44700b	poison	pass						0	f3_clean		
+L_T2.C2_1fb082d4	poison	pass						0	f3_clean		
+L_T2.C3_33cfe628	poison	pass						0	f3_clean		
+L_T2.C6_f62721fb	poison	pass						0	f3_clean		
+L_T2.C8_f718bced	poison	pass						0	f3_clean		
+L_SYNTH_CONTROL_4eda1e70	poison	pass						0	f3_clean		
+L_SYNTH_PLANTED_A_e5325f6b	poison	fail	UNTRUSTED_SOURCE					0	f3_planted		
+L_SYNTH_PLANTED_B_6f68adb8	poison	fail	UNTRUSTED_SOURCE					0	f3_planted		
