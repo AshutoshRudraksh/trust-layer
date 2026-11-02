@@ -52,7 +52,7 @@ def test_one_call_with_the_plan_settings_and_one_stored_answer(tmp_path) -> None
     assert faults == [] and len(fake.calls) == 1
     assert fake.calls[0] == WORKER_PARAMS
     assert (WORKER_PARAMS["temperature"], WORKER_PARAMS["reasoning_effort"], WORKER_PARAMS["max_output_tokens"],
-            WORKER_PARAMS["model"]) == (0, "low", 2048, WORKER_MODEL)
+            WORKER_PARAMS["model"]) == (0, "low", 6144, WORKER_MODEL)
     a = answers[0]
     assert a.trace_id == trace_id("r1", "T1", a.answer_text) and a.lesson_ids == ("L_a",)
     assert AnswerStore(tmp_path / "answers.jsonl").read() == answers
