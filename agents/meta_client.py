@@ -1,16 +1,58 @@
 from __future__ import annotations
 
 import os
+import time
+import uuid
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 import httpx
 
+from .http_retry import post_with_backoff
+from .spend_ledger import SpendLedger
 from .tracing import TraceCollector
+
+LEDGER_PROVIDER = "meta"
+
+
+def _extract_output_text(data: Dict[str, Any]) -> str:
+    """Final text from either endpoint shape.
+
+    The responses endpoint puts text in output items of type "message", each
+    holding content parts of type "output_text"; "reasoning" items carry no
+    text. The chat completions endpoint puts it in choices[0].message.content.
+    """
+    if data.get("output_text"):
+        return str(data["output_text"])
+    parts: List[str] = []
+    for item in data.get("output") or []:
+        if item.get("type") != "message":
+            continue
+        for part in item.get("content") or []:
+            if part.get("type") == "output_text" and part.get("text"):
+                parts.append(str(part["text"]))
+    if parts:
+        return "".join(parts)
+    choices = data.get("choices") or []
+    if choices:
+        return str((choices[0].get("message") or {}).get("content") or "")
+    return ""
+
+
+def _first_count(usage: Dict[str, Any], keys: tuple, fallback: int) -> int:
+    """First token count present in usage; a reported 0 is kept, not replaced."""
+    for key in keys:
+        if usage.get(key) is not None:
+            return int(usage[key])
+    return fallback
 
 
 class BudgetCapExceededError(RuntimeError):
     """Raised when an API call would exceed the $150.00 hackathon credit cap or when free credits are not yet applied."""
+
+
+class EmptyReplyError(RuntimeError):
+    """Raised when a live call is billed but carries no final message text."""
 
 
 class InvalidReasoningEffortError(ValueError):
@@ -80,6 +122,7 @@ class MetaModelClient:
 
     DEFAULT_BASE_URL = "https://api.meta.ai/v1"
     DEFAULT_BUDGET_CAP_USD = 40.00  # hard stop agreed for the hackathon; credit is $150
+    DEFAULT_TIMEOUT_S = 40.0
 
     def __init__(
         self,
@@ -89,6 +132,10 @@ class MetaModelClient:
         free_credits_applied: bool = True,
         require_free_credits_applied: bool = True,
         tracer: Optional[TraceCollector] = None,
+        ledger: Optional[SpendLedger] = None,
+        timeout_s: float = DEFAULT_TIMEOUT_S,
+        transport: Optional[httpx.BaseTransport] = None,
+        sleep: Callable[[float], None] = time.sleep,
     ) -> None:
         self.api_key = api_key if api_key is not None else os.getenv("MODEL_API_KEY", "")
         self.base_url = base_url.rstrip("/")
@@ -97,6 +144,14 @@ class MetaModelClient:
         self.require_free_credits_applied = require_free_credits_applied
         self.cumulative_spend_usd: float = 0.0
         self.tracer = tracer or TraceCollector()
+        # Live spend persists across processes in the ledger file; the $40 hard
+        # stop is checked against that cumulative total before every call.
+        # Dry run spend is simulated and stays in this process only.
+        self.ledger = ledger or SpendLedger()
+        self.dry_run_spend_usd: float = 0.0
+        self.timeout_s = timeout_s
+        self._transport = transport
+        self._sleep = sleep
 
     def estimate_cost_usd(
         self,
@@ -123,10 +178,11 @@ class MetaModelClient:
                 "Meta Model API call blocked: free hackathon credits ($150.00) are not yet marked as applied on the Billing tab. "
                 "Blocking execution to prevent unintended personal card charges."
             )
-        if self.cumulative_spend_usd + projected_cost_usd > self.budget_cap_usd:
+        spent = self.ledger.total_usd(LEDGER_PROVIDER) + self.dry_run_spend_usd
+        if spent + projected_cost_usd > self.budget_cap_usd:
             raise BudgetCapExceededError(
                 f"Meta Model API call blocked: projected total spend "
-                f"${self.cumulative_spend_usd + projected_cost_usd:.4f} exceeds the ${self.budget_cap_usd:.2f} budget cap."
+                f"${spent + projected_cost_usd:.4f} exceeds the ${self.budget_cap_usd:.2f} budget cap."
             )
 
     def build_responses_payload(
@@ -196,6 +252,7 @@ class MetaModelClient:
                     output_tokens=actual_output_tokens,
                 )
                 self.cumulative_spend_usd = round(self.cumulative_spend_usd + actual_cost, 8)
+                self.dry_run_spend_usd = round(self.dry_run_spend_usd + actual_cost, 8)
                 span.attributes["dry_run"] = True
                 span.attributes["cost_usd"] = actual_cost
                 return ModelResponse(
@@ -224,21 +281,32 @@ class MetaModelClient:
             else:
                 request_body = payload
 
-            with httpx.Client(timeout=60.0) as client:
-                resp = client.post(full_endpoint, headers=headers, json=request_body)
-                resp.raise_for_status()
+            with httpx.Client(timeout=self.timeout_s, transport=self._transport) as client:
+                resp = post_with_backoff(
+                    client, full_endpoint, headers=headers, json=request_body, sleep=self._sleep
+                )
                 data = resp.json()
 
             usage = data.get("usage", {})
-            in_tok = int(usage.get("input_tokens") or usage.get("prompt_tokens") or estimated_input_tokens)
-            out_tok = int(usage.get("output_tokens") or usage.get("completion_tokens") or 64)
+            in_tok = _first_count(usage, ("input_tokens", "prompt_tokens"), estimated_input_tokens)
+            out_tok = _first_count(usage, ("output_tokens", "completion_tokens"), 64)
             actual_cost = self.estimate_cost_usd(selected_model, in_tok, out_tok)
-            self._check_budget_guard(actual_cost)
+            # The money is spent once the reply arrives, so record it before
+            # anything else; the guard before the next call enforces the cap.
+            response_id = str(data.get("id") or "")
+            call_id = f"{response_id}:{uuid.uuid4().hex}" if response_id else uuid.uuid4().hex
+            self.ledger.record(LEDGER_PROVIDER, call_id, actual_cost)
             self.cumulative_spend_usd = round(self.cumulative_spend_usd + actual_cost, 8)
 
-            output_text = data.get("output_text", "")
-            if not output_text and "choices" in data and data["choices"]:
-                output_text = data["choices"][0].get("message", {}).get("content", "")
+            output_text = _extract_output_text(data)
+            reasoning_tokens = int((usage.get("output_tokens_details") or {}).get("reasoning_tokens") or 0)
+            span.attributes["reasoning_tokens"] = reasoning_tokens
+            if not output_text.strip():
+                reason = (data.get("incomplete_details") or {}).get("reason") or data.get("status") or "unknown"
+                raise EmptyReplyError(
+                    f"Meta reply had no final text (status reason: {reason}; "
+                    f"output_tokens={out_tok}, reasoning_tokens={reasoning_tokens}, cap={max_output_tokens})."
+                )
 
             span.attributes["dry_run"] = False
             span.attributes["cost_usd"] = actual_cost
