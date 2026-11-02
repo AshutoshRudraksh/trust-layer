@@ -11,7 +11,7 @@ replies and combines verdicts.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 from agents.baseten_client import BASETEN_GUIDE_USD
 from agents.http_retry import RateLimitedError
@@ -121,6 +121,21 @@ def combine(verdict_a: str, verdict_b: str) -> Tuple[str, Tuple[str, ...]]:
     return PASS, ()
 
 
+def judges_agree(verdict_a: str, verdict_b: str) -> bool:
+    """Agreement needs two real verdicts that match. Two identical faults
+    (ERROR and ERROR, MALFORMED and MALFORMED) are not agreement."""
+    return verdict_a in (PASS, FAIL) and verdict_a == verdict_b
+
+
+def self_agreement(first: Sequence[str], second: Sequence[str]) -> Tuple[int, int, int]:
+    """One judge across two runs: (agreeing pairs, pairs with two real
+    verdicts, pairs with a fault on either side)."""
+    if len(first) != len(second):
+        raise ValueError("both runs must grade the same criteria in the same order")
+    real = [(a, b) for a, b in zip(first, second) if a in (PASS, FAIL) and b in (PASS, FAIL)]
+    return sum(judges_agree(a, b) for a, b in real), len(real), len(first) - len(real)
+
+
 def judge_criterion(criterion: Dict[str, Any], answer_text: str, meta: Any, baseten: Any) -> JudgedVerdict:
     prompt = build_judge_prompt(criterion, answer_text)
     call_a = _run_judge("A", meta, prompt)
@@ -133,7 +148,9 @@ def judge_criterion(criterion: Dict[str, Any], answer_text: str, meta: Any, base
 class GradeReport:
     task_id: str
     verdicts: Tuple[Union[Verdict, JudgedVerdict], ...]
-    agreement: Tuple[int, int]  # (judged criteria where A and B gave the same verdict, judged criteria)
+    # (criteria where A and B gave the same real verdict, criteria where both gave a real verdict)
+    agreement: Tuple[int, int]
+    judge_unavailable: int  # criteria where one or both judges gave no real verdict
     inconclusive: Tuple[str, ...]  # criterion ids with no usable verdict from one or both judges
     ledgers: Dict[str, Dict[str, Any]]
     meta_cap_usd: float
@@ -145,20 +162,24 @@ def grade_answer(answer_text: str, task_id: str, meta: Any, baseten: Any) -> Gra
     rubric = load_rubric(task_id, role="judge")
     by_id = {c["id"]: c for c in rubric["criteria"]}
     verdicts: List[Union[Verdict, JudgedVerdict]] = []
-    agree = judged = 0
+    agree = both_real = unavailable = 0
     for verdict in check_answer(answer_text, rubric):
         if verdict.status != PENDING_JUDGE:
             verdicts.append(verdict)
             continue
         result = judge_criterion(by_id[verdict.criterion_id], answer_text, meta, baseten)
-        judged += 1
-        agree += int(result.judge_a.verdict == result.judge_b.verdict)
+        if JUDGE_UNAVAILABLE in result.flags:
+            unavailable += 1
+        else:
+            both_real += 1
+            agree += int(judges_agree(result.judge_a.verdict, result.judge_b.verdict))
         verdicts.append(result)
     ledger = getattr(meta, "ledger", None) or getattr(baseten, "ledger", None)
     return GradeReport(
         task_id=task_id,
         verdicts=tuple(verdicts),
-        agreement=(agree, judged),
+        agreement=(agree, both_real),
+        judge_unavailable=unavailable,
         inconclusive=tuple(v.criterion_id for v in verdicts if v.status == INCONCLUSIVE),
         ledgers=ledger.snapshot() if ledger is not None else {},
         meta_cap_usd=getattr(meta, "budget_cap_usd", MetaModelClient.DEFAULT_BUDGET_CAP_USD),
