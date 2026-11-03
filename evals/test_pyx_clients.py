@@ -18,7 +18,7 @@ from agents.baseten_client import (
     BASETEN_PRICING,
     BasetenClient,
 )
-from agents.http_retry import RateLimitedError, post_with_backoff
+from agents.http_retry import RateLimitedError, TransportFailedError, post_with_backoff
 from agents.meta_client import BudgetCapExceededError, MetaModelClient
 from agents.spend_ledger import SpendLedger
 
@@ -119,6 +119,71 @@ def test_backoff_retries_429_at_1_2_4_seconds_then_raises() -> None:
             post_with_backoff(client, "https://example.test/x", headers={}, json={}, sleep=sleeps.append)
     assert len(seen) == 4
     assert sleeps == [1.0, 2.0, 4.0]
+
+
+def test_backoff_retries_read_timeout_then_succeeds() -> None:
+    seen: List[httpx.Request] = []
+    sleeps: List[float] = []
+    attempts = {"n": 0}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        attempts["n"] += 1
+        if attempts["n"] < 3:
+            raise httpx.ReadTimeout("timed out")
+        return _chat_ok()
+
+    transport = _transport(handler, seen)
+    with httpx.Client(transport=transport) as client:
+        resp = post_with_backoff(client, "https://example.test/x", headers={}, json={}, sleep=sleeps.append)
+    assert resp.status_code == 200
+    assert len(seen) == 3
+    assert sleeps == [1.0, 2.0]
+
+
+def test_backoff_read_timeout_exhausts_schedule_and_raises_named_error() -> None:
+    seen: List[httpx.Request] = []
+    sleeps: List[float] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        raise httpx.ReadTimeout("timed out")
+
+    transport = _transport(handler, seen)
+    with httpx.Client(transport=transport) as client:
+        with pytest.raises(TransportFailedError) as excinfo:
+            post_with_backoff(
+                client,
+                "https://example.test/x",
+                headers={"Authorization": "Bearer SECRET"},
+                json={},
+                sleep=sleeps.append,
+            )
+    assert len(seen) == 4
+    assert sleeps == [1.0, 2.0, 4.0]
+    message = str(excinfo.value)
+    assert "https://example.test/x" in message
+    assert "ReadTimeout" in message
+    assert "SECRET" not in message
+
+
+def test_backoff_mixed_429_and_timeout_share_one_schedule() -> None:
+    seen: List[httpx.Request] = []
+    sleeps: List[float] = []
+    attempts = {"n": 0}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        attempts["n"] += 1
+        if attempts["n"] == 1:
+            return httpx.Response(429)
+        if attempts["n"] == 2:
+            raise httpx.ConnectError("refused")
+        return _chat_ok()
+
+    transport = _transport(handler, seen)
+    with httpx.Client(transport=transport) as client:
+        resp = post_with_backoff(client, "https://example.test/x", headers={}, json={}, sleep=sleeps.append)
+    assert resp.status_code == 200
+    assert len(seen) == 3
+    assert sleeps == [1.0, 2.0]
 
 
 def test_backoff_honors_retry_after_then_succeeds() -> None:
