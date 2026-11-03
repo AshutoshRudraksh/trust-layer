@@ -105,3 +105,52 @@ def replay_pair(a: Candidate, b: Candidate, tasks: Sequence[str], run: Run, base
         key = "+".join(c.lesson.lesson_id for c in cands)
         table[key] = {t: _diff(without[t], with_[t]) for t in tasks}
     return table
+
+
+REPS = 3
+
+
+def _rep_baselines(baselines: Sequence[Paired], run_id: str) -> List[Paired]:
+    if len(baselines) != REPS:
+        raise UnpairedBaselineError(f"need {REPS} Paired baselines, one per repetition, got {len(baselines)}")
+    for i, b in enumerate(baselines):
+        _check(b, f"{run_id}_r{i}", i)
+    return list(baselines)
+
+
+def replay_reps(cand: Candidate, tasks: Sequence[str], run: Run, baselines: Sequence[Paired],
+                run_id: str, copy: str) -> Tuple[DecisionRow, List[DecisionRow]]:
+    """EVAL.md section 6: pass only if fixed in at least 2 of 3 repetitions and broken in none."""
+    seen: Dict[Tuple[str, str], Any] = {}
+
+    def capture(task_id: str, ctx: ArmContext, rid: str) -> Any:
+        seen[(rid, task_id)] = run(task_id, ctx, rid)
+        return seen[(rid, task_id)]
+
+    criterion = cand.lesson.fixes_criterion_id
+    source = criterion.split(".")[0]
+    detail, marks = [], []
+    for i, b in enumerate(_rep_baselines(baselines, run_id)):
+        rid = f"{run_id}_r{i}"
+        row = replay_lesson(cand, tasks, capture, b, rid, i, copy)
+        detail.append(row)
+        status = _statuses(seen[(replay_run_id(rid, (cand.lesson.lesson_id,)), source)]).get(criterion)
+        marks.append("F" if row.criteria_fixed else ("I" if status not in (PASS, FAIL) else "N"))
+    broken = sorted({c for d in detail for c in d.criteria_broken.split(",") if c})
+    fixed = criterion if marks.count("F") >= 2 else ""
+    result = "pass" if fixed and not broken else "fail"
+    reason = "" if result == "pass" else ("REGRESSION" if broken else "NO_FIX")
+    return DecisionRow(cand.lesson.lesson_id, "replay", result, reason, fixed, ",".join(broken), "", "", "0",
+                       f"{run_id}_replay", "reps=" + ",".join(marks), source, copy), detail
+
+
+def pair_reps(a: Candidate, b: Candidate, tasks: Sequence[str], run: Run, baselines: Sequence[Paired],
+              run_id: str) -> Dict[str, Any]:
+    """EVAL.md section 7 with A8: together runs in all three repetitions; a break in any leaves the pair unresolved."""
+    together = []
+    for i, base in enumerate(_rep_baselines(baselines, run_id)):
+        without = base.reports
+        with_ = _run_with([a, b], tasks, run, f"{run_id}_r{i}")
+        together.append({t: _diff(without[t], with_[t]) for t in tasks})
+    resolved = not any(broken for rep in together for _, broken in rep.values())
+    return {"pair": (a.lesson.lesson_id, b.lesson.lesson_id), "together": together, "resolved": resolved}
