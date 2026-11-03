@@ -117,8 +117,9 @@ def test_keyless_reruns_reproduce_every_output_byte_for_byte_with_no_unused_line
     _passing(k, ids[2:3])
     _approve(k, ids[2:3])
     assert phase2(k, "R", h, 3, src_log=src, eval_path=ev) == 0
-    served = sum(int(n) for n in re.findall(r"served (\d+) log lines", capsys.readouterr().out))
-    assert served == total and len(fake.calls) == calls
+    served = {int(n) for line in re.findall(r"served log seqs (\S*)", capsys.readouterr().out)
+              for n in line.split(",") if n}
+    assert served == set(range(total)) and len(fake.calls) == calls  # every line served, no unused line
     for f in sorted(p.name for p in out.iterdir() if p.name not in ("calls.jsonl", "budget_start.json")):
         assert (k / f).read_bytes() == (out / f).read_bytes(), f
 
