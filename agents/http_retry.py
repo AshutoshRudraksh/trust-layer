@@ -3,9 +3,10 @@
 Retries cover HTTP 429 and transient transport errors (httpx.TransportError,
 which includes read timeouts and connection errors) on one shared schedule:
 three retries at 1, 2 and 4 seconds. A numeric Retry-After header replaces the
-scheduled wait after a 429. Errors name the URL, the status, and the transport
-error type only, never request headers, so an API key cannot leak through an
-exception message.
+scheduled wait after a 429, capped at MAX_RETRY_AFTER_S: a server may ask for
+a shorter wait, never for an unbounded one. Errors name the URL, the status,
+and the transport error type only, never request headers, so an API key
+cannot leak through an exception message.
 """
 from __future__ import annotations
 
@@ -15,6 +16,8 @@ from typing import Any, Callable, Dict, Optional, Sequence
 import httpx
 
 BACKOFF_SCHEDULE_S: Sequence[float] = (1.0, 2.0, 4.0)
+
+MAX_RETRY_AFTER_S: float = 60.0
 
 
 class RateLimitedError(RuntimeError):
@@ -30,7 +33,7 @@ def _retry_after_seconds(resp: httpx.Response) -> Optional[float]:
     if raw is None:
         return None
     try:
-        return max(0.0, float(raw))
+        return min(MAX_RETRY_AFTER_S, max(0.0, float(raw)))
     except ValueError:
         return None
 

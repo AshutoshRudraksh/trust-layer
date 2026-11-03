@@ -186,6 +186,28 @@ def test_backoff_mixed_429_and_timeout_share_one_schedule() -> None:
     assert sleeps == [1.0, 2.0]
 
 
+def test_backoff_caps_a_huge_retry_after_at_60_seconds() -> None:
+    seen: List[httpx.Request] = []
+    sleeps: List[float] = []
+    responses = [httpx.Response(429, headers={"Retry-After": "3600"}), _chat_ok()]
+    transport = _transport(lambda r: responses.pop(0), seen)
+    with httpx.Client(transport=transport) as client:
+        resp = post_with_backoff(client, "https://example.test/x", headers={}, json={}, sleep=sleeps.append)
+    assert resp.status_code == 200
+    assert sleeps == [60.0]
+
+
+def test_backoff_huge_retry_after_still_raises_after_the_attempt_budget() -> None:
+    seen: List[httpx.Request] = []
+    sleeps: List[float] = []
+    transport = _transport(lambda r: httpx.Response(429, headers={"Retry-After": "3600"}), seen)
+    with httpx.Client(transport=transport) as client:
+        with pytest.raises(RateLimitedError):
+            post_with_backoff(client, "https://example.test/x", headers={}, json={}, sleep=sleeps.append)
+    assert len(seen) == 4
+    assert sleeps == [60.0, 60.0, 60.0]
+
+
 def test_backoff_honors_retry_after_then_succeeds() -> None:
     seen: List[httpx.Request] = []
     sleeps: List[float] = []
