@@ -164,6 +164,11 @@ def _phase1(args: Any) -> int:
     if args.keyless:
         src = Path(args.src or args.out) / "calls.jsonl"
     else:
+        import os
+        ledger_file = os.environ.get("PYX_SPEND_LEDGER", "")
+        if not ledger_file or not Path(ledger_file).is_file():
+            print("refused: a live phase needs PYX_SPEND_LEDGER naming an existing shared ledger file")
+            return 2
         from agents.baseten_client import BasetenClient
         from agents.meta_client import MetaModelClient
         from agents.spend_ledger import SpendLedger

@@ -15,9 +15,12 @@ from pyx.run import main
 FIX = Path(__file__).resolve().parent / "fixtures" / "pyx"
 
 
-class Fake:
-    def __init__(self, ledger=None, cost=0.0):
-        self.calls, self.ledger, self.cost = [], ledger, cost
+class MetaFake:
+    """Stands for MetaModelClient: respond, with the client's other public methods as stubs that raise."""
+
+    def __init__(self, ledger=None, cost=0.0, calls=None):
+        self.calls = [] if calls is None else calls
+        self.ledger, self.cost = ledger, cost
 
     def respond(self, prompt, **kw):
         if self.ledger is not None:
@@ -32,15 +35,46 @@ class Fake:
         self.calls.append(kind)
         return NS(output_text=text, input_tokens=1, output_tokens=1, cost_usd=0.0, model="m")
 
-    chat = respond
+    def build_responses_payload(self, *a, **kw):
+        raise AssertionError("phase code must not call build_responses_payload on a client")
+
+    def estimate_cost_usd(self, *a, **kw):
+        raise AssertionError("phase code must not call estimate_cost_usd on a client")
+
+
+class BasetenFake:
+    """Stands for BasetenClient: chat only, with estimate_cost_usd as a stub that raises."""
+
+    def __init__(self, ledger=None, cost=0.0, calls=None):
+        self.calls = [] if calls is None else calls
+        self.ledger, self.cost = ledger, cost
+
+    def chat(self, prompt, **kw):
+        if self.ledger is not None:
+            self.ledger.spent += self.cost
+        self.calls.append("judge")
+        return NS(output_text="FAIL", input_tokens=1, output_tokens=1, cost_usd=0.0, model="m")
+
+    def estimate_cost_usd(self, *a, **kw):
+        raise AssertionError("phase code must not call estimate_cost_usd on a client")
 
 
 class Ledger:
+    """Stands for SpendLedger: total_usd, record and snapshot."""
+
     def __init__(self):
         self.spent = 0.0
 
     def total_usd(self, provider):
         return self.spent if provider == "meta" else 0.0
+
+    def record(self, provider, call_id, cost_usd):
+        if provider == "meta":
+            self.spent += cost_usd
+        return self.total_usd(provider)
+
+    def snapshot(self):
+        return {"meta": {"total_usd": self.spent, "calls": 0}, "baseten": {"total_usd": 0.0, "calls": 0}}
 
 
 def _eval(tmp_path, status="FROZEN", reps=3):
@@ -50,8 +84,9 @@ def _eval(tmp_path, status="FROZEN", reps=3):
 
 
 def _live(ledger=None, cost=0.0):
-    fake = Fake(ledger, cost)
-    return fake, {"worker": fake, "a": fake, "b": fake, "distill": fake}
+    meta = MetaFake(ledger, cost)
+    base = BasetenFake(ledger, cost, calls=meta.calls)
+    return meta, {"worker": meta, "a": meta, "b": base, "distill": meta}
 
 
 def _go(tmp_path, out, live, ledger=None, **kw):

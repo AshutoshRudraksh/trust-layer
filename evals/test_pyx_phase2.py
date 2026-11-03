@@ -9,7 +9,7 @@ from pathlib import Path
 from pyx.decisions import DecisionLog, DecisionRow
 from pyx.lessons import CandidateStore
 from pyx.phase import phase1, phase2
-from evals.test_pyx_phase1 import Fake, Ledger, _eval, _live, _rows
+from evals.test_pyx_phase1 import BasetenFake, Ledger, MetaFake, _eval, _live, _rows
 
 PHASE = Path(__file__).resolve().parent.parent / "pyx" / "phase.py"
 
@@ -120,7 +120,7 @@ def test_keyless_reruns_reproduce_every_output_byte_for_byte_with_no_unused_line
     served = {int(n) for line in re.findall(r"served log seqs (\S*)", capsys.readouterr().out)
               for n in line.split(",") if n}
     assert served == set(range(total)) and len(fake.calls) == calls  # every line served, no unused line
-    for f in sorted(p.name for p in out.iterdir() if p.name not in ("calls.jsonl", "budget_start.json")):
+    for f in sorted(p.name for p in out.iterdir() if p.name not in ("calls.jsonl", "budget_start.json", "spend.json")):
         assert (k / f).read_bytes() == (out / f).read_bytes(), f
 
 
@@ -130,8 +130,8 @@ def test_phase_module_has_no_tracing_import_and_no_http_client() -> None:
         assert not re.search(rf"^\s*(from|import) \S*{bad}", src, re.M), bad
 
 
-class _PoisonFake(Fake):
-    """The shared fake, except the first criterion it distills gets an injection signature, so its lesson fails."""
+class _PoisonFake(MetaFake):
+    """The Meta fake, except the first criterion it distills gets an injection signature, so its lesson fails."""
 
     def respond(self, prompt, **kw):
         r = super().respond(prompt, **kw)
@@ -146,7 +146,7 @@ class _PoisonFake(Fake):
 def test_a6_poison_failure_rides_the_free_arm_but_is_never_replayed_or_earnable(tmp_path, monkeypatch) -> None:
     import pyx.phase as ph
     fake = _PoisonFake()
-    live = {"worker": fake, "a": fake, "b": fake, "distill": fake}
+    live = {"worker": fake, "a": fake, "b": BasetenFake(calls=fake.calls), "distill": fake}
     replayed = []
     real_reps, real_pair = ph.replay_reps, ph.pair_reps
     monkeypatch.setattr(ph, "replay_reps", lambda c, *a, **k: replayed.append(c.lesson.lesson_id) or real_reps(c, *a, **k))
