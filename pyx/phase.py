@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from agents.baseten_client import BASETEN_MODEL
-from pyx.arms import ArmContext, no_memory
+from pyx.arms import ArmContext, earned_lessons, free_lessons, no_memory, raw_traces
 from pyx.call_log import CallLog, _sha256
 from pyx.checker import check_answer
 from pyx.decisions import DecisionLog, rows_from_grade
@@ -25,7 +25,7 @@ from pyx.recording import RecordingClient
 from pyx.replay import pair_reps, replay_reps, without_runs
 from pyx.replay_client import ReplayClient, ReplayMissError
 from pyx.rubric import load_rubric
-from pyx.run import EVAL_PATH, EvalNotFrozenError, check_frozen
+from pyx.run import EVAL_PATH, EvalNotFrozenError, check_frozen, metrics, planted_earned
 from pyx.worker import WORKER_MODEL
 from pyx.worker_run import AnswerStore, work
 
@@ -114,6 +114,10 @@ class Engine:
             DecisionLog(self.out / tsv).append(rows_from_grade(report, rid, seed, copy))
         return answers[0], report
 
+    def served(self) -> List[int]:
+        seqs = {c.replay._lines[i]["seq"] for c in self.c.values() for i in c.replay._served}
+        return sorted(seqs | {self.checks[i]["seq"] for i in self.used})
+
     def runner(self) -> Any:
         def run(task_id: str, ctx: ArmContext, rid: str) -> Any:
             return self.cell(task_id, "clean", rid, int(rid[len(self.run_id) + 2]), ctx, "replay_grades.tsv")[1]
@@ -131,6 +135,9 @@ def _stage1(eng: Engine, reps: int) -> None:
             store = CandidateStore(out / f"candidates_r{rep}_{copy}.jsonl")
             for c in cands:
                 store.append(c)
+                union = CandidateStore(out / "candidates_r0.jsonl")  # the one file approve reads; first copy wins
+                if rep == 0 and c.lesson.lesson_id not in {o.lesson.lesson_id for o in union.read()}:
+                    union.append(c)
     decisions, passed = DecisionLog(out / "decisions.tsv"), []
     for copy in ("clean", "planted"):
         store = CandidateStore(out / f"candidates_r0_{copy}.jsonl")
@@ -171,32 +178,108 @@ def _stage2(eng: Engine, reps: int, pairs: Path) -> None:
     (eng.out / "pairs.json").write_text(json.dumps(verdicts, indent=1, sort_keys=True) + "\n")
 
 
-def phase1(out: Any, run_id: str, eval_sha256: str, reps: int, pairs: Optional[Path] = None,
-           live: Optional[Dict[str, Any]] = None, ledger: Any = None, src_log: Optional[Path] = None,
-           eval_path: Path = EVAL_PATH) -> int:
+def _gate(eval_path: Path, eval_sha256: str, reps: int) -> bool:
     try:
         check_frozen(eval_path, eval_sha256)
     except EvalNotFrozenError as exc:
         print(f"refused: {exc}")
-        return 2
+        return False
     if reps != eval_reps(eval_path):
         print(f"refused: --reps {reps} differs from the {eval_reps(eval_path)} repetitions frozen in EVAL.md")
+        return False
+    return True
+
+
+def _finish(eng: Engine, status: str) -> int:
+    (eng.out / "status.txt").write_text(status + "\n")
+    print(status)
+    if eng.keyless:
+        print("served log seqs " + ",".join(map(str, eng.served())))
+    return 0
+
+
+def phase1(out: Any, run_id: str, eval_sha256: str, reps: int, pairs: Optional[Path] = None,
+           live: Optional[Dict[str, Any]] = None, ledger: Any = None, src_log: Optional[Path] = None,
+           eval_path: Path = EVAL_PATH) -> int:
+    if not _gate(eval_path, eval_sha256, reps):
         return 2
     out = Path(out)
     out.mkdir(parents=True, exist_ok=True)
     eng = Engine(out, run_id, live, ledger, src_log)
-    status = out / "status.txt"
     try:
         if not (out / "candidates_for_pairs.txt").exists():
             _stage1(eng, reps)
         if pairs is None:
-            status.write_text("awaiting pairs\n")
-        elif not (out / "pairs.json").exists():
+            return _finish(eng, "awaiting pairs")
+        if not (out / "pairs.json").exists():
             _stage2(eng, reps, pairs)
-        if pairs is not None:
-            status.write_text("ready for approval\n")
     except BudgetAbort:
         print((out / "abort.txt").read_text().strip())
         return 4
-    print(status.read_text().strip())
-    return 0
+    return _finish(eng, "ready for approval")
+
+
+def _metric_groups(cells: List[Tuple[str, Any, Any]]) -> Dict[str, Any]:
+    groups: Dict[str, Tuple[List[Any], List[Any]]] = {}
+    for key, answer, report in cells:
+        for k in (key, key.rsplit("/", 1)[0]):
+            groups.setdefault(k, ([], []))[0].append(answer)
+            groups[k][1].append(report)
+    return {k: metrics(*v) for k, v in sorted(groups.items())}
+
+
+def phase2(out: Any, run_id: str, eval_sha256: str, reps: int, live: Optional[Dict[str, Any]] = None,
+           ledger: Any = None, src_log: Optional[Path] = None, eval_path: Path = EVAL_PATH) -> int:
+    """EVAL.md sections 5, 8 and 9: cycle 1 over the four arms, then metrics, the planted listing and a summary."""
+    if not _gate(eval_path, eval_sha256, reps):
+        return 2
+    out = Path(out)
+    if not (out / "pairs.json").exists():
+        print("refused: pairs.txt not resolved yet; run phase1 with --pairs first")
+        return 3
+    rows = DecisionLog(out / "decisions.tsv").read()
+    pairs = json.loads((out / "pairs.json").read_text())
+    unresolved = {i for p in pairs if not p["resolved"] for i in p["pair"]}
+    passed = {r.lesson_id for r in rows if r.step == "replay" and r.result == "pass"} - unresolved
+    missing = sorted(passed - {r.lesson_id for r in rows if r.step == "approval"})
+    if missing:
+        print(f"refused: no approval row yet for {', '.join(missing)}")
+        return 3
+    cands = CandidateStore(out / "candidates_r0.jsonl").read()
+    earned = earned_lessons([c for c in cands if c.lesson.lesson_id not in unresolved], rows)
+    free = free_lessons(cands)
+    eng = Engine(out, run_id, live, ledger, src_log)
+    cells, contexts = [], []
+    try:
+        for rep in range(reps):
+            for task_id, copy in CYCLE0:
+                rid = f"{run_id}_r{rep}" if copy == "clean" else f"{run_id}_poison_r{rep}"
+                a, r = eng.cell(task_id, copy, rid, rep, no_memory(), "decisions.tsv")
+                cells.append((f"cycle0/{task_id}" + ("_planted" if copy == "planted" else ""), a, r))
+            for task_id in ("T1", "T2"):
+                a0, r0 = next((a, r) for k, a, r in cells if k == f"cycle0/{task_id}" and a.seed == rep)
+                raw = raw_traces([(task_id, a0.answer_text, r0)])
+                contexts.append(f"raw_traces\t{task_id}\t{rep}\t{a0.trace_id}")
+                for ctx in (no_memory(), raw, free, earned):
+                    a, r = eng.cell(task_id, "clean", f"{run_id}_c1_r{rep}", rep, ctx, "cycle1.tsv")
+                    cells.append((f"cycle1/{ctx.arm}/{task_id}", a, r))
+                    contexts.append(f"{ctx.arm}\t{task_id}\t{rep}\t{','.join(ctx.lesson_ids)}")
+    except BudgetAbort:
+        print((out / "abort.txt").read_text().strip())
+        return 4
+    (out / "contexts.tsv").write_text("".join(c + "\n" for c in contexts))
+    (out / "metrics.json").write_text(json.dumps(_metric_groups(cells), indent=1, sort_keys=True) + "\n")
+    planted = planted_earned(cands, rows, [a for k, a, _ in cells if k.startswith("cycle0/")])
+    (out / "planted_earned.md").write_text("# Earned lessons distilled from planted answers\n" + "".join(
+        f"\n## {c.lesson.lesson_id}\n{c.lesson.text}\n" for c in planted))
+    later = [c for rep in (1, 2) for copy in ("clean", "planted")
+             for c in CandidateStore(out / f"candidates_r{rep}_{copy}.jsonl").read()]
+    seen = {c.provenance.text_sha256 for c in cands}
+    (out / "summary.md").write_text(
+        f"# Run {run_id} summary\n\nRepetition 0 candidates: {len(cands)}\n"
+        f"Repetition 1 and 2 candidates (recorded, never replayed): {len(later)}, "
+        f"seen again in repetition 0: {sum(c.provenance.text_sha256 in seen for c in later)}\n"
+        f"Earned: {', '.join(earned.lesson_ids) or 'none'}\n"
+        f"Unresolved pairs (neither carried): {', '.join('+'.join(p['pair']) for p in pairs if not p['resolved']) or 'none'}\n"
+        f"Planted earned: {', '.join(c.lesson.lesson_id for c in planted) or 'none'}\n")
+    return _finish(eng, "phase 2 done")

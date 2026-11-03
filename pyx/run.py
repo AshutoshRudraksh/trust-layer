@@ -159,7 +159,7 @@ def _approve(args: Any, stdin: TextIO, out: TextIO) -> int:
 
 
 def _phase1(args: Any) -> int:
-    from pyx.phase import phase1
+    from pyx.phase import phase1, phase2
     live, ledger, src = None, None, None
     if args.keyless:
         src = Path(args.src or args.out) / "calls.jsonl"
@@ -171,6 +171,8 @@ def _phase1(args: Any) -> int:
         ledger = SpendLedger()
         meta = MetaModelClient(ledger=ledger)
         live = {"worker": worker_client(ledger=ledger), "a": meta, "b": BasetenClient(ledger=ledger), "distill": meta}
+    if args.command == "phase2":
+        return phase2(args.out, args.run_id, args.eval_sha256, args.reps, live, ledger, src, Path(args.eval))
     return phase1(args.out, args.run_id, args.eval_sha256, args.reps, args.pairs and Path(args.pairs), live, ledger,
                   src, Path(args.eval))
 
@@ -187,14 +189,15 @@ def main(argv: Optional[Sequence[str]] = None, stdin: TextIO = sys.stdin, out: T
     ap.add_argument("--decisions", required=True)
     ap.add_argument("--gate-db", default=str(GATE_DB))
     ap.add_argument("--run-id", required=True)
-    ph = sub.add_parser("phase1")
-    ph.add_argument("--eval", default=str(EVAL_PATH))
-    for flag in ("--run-id", "--out", "--eval-sha256"):
-        ph.add_argument(flag, required=True)
-    ph.add_argument("--reps", type=int, required=True)
-    ph.add_argument("--pairs", default=None)
-    ph.add_argument("--keyless", action="store_true")
-    ph.add_argument("--from", dest="src", default=None, help="keyless: the run directory whose calls.jsonl serves")
+    for name in ("phase1", "phase2"):
+        ph = sub.add_parser(name)
+        ph.add_argument("--eval", default=str(EVAL_PATH))
+        for flag in ("--run-id", "--out", "--eval-sha256"):
+            ph.add_argument(flag, required=True)
+        ph.add_argument("--reps", type=int, required=True)
+        ph.add_argument("--pairs", default=None)
+        ph.add_argument("--keyless", action="store_true")
+        ph.add_argument("--from", dest="src", default=None, help="keyless: the run directory whose calls.jsonl serves")
     args = parser.parse_args(argv)
     try:
         actual = check_frozen(args.eval, args.eval_sha256)
@@ -202,7 +205,7 @@ def main(argv: Optional[Sequence[str]] = None, stdin: TextIO = sys.stdin, out: T
         print(f"refused: {err}", file=out)
         return 2
     print(f"EVAL frozen, sha256 {actual}", file=out)
-    if args.command == "phase1":
+    if args.command in ("phase1", "phase2"):
         return _phase1(args)
     return _approve(args, stdin, out) if args.command == "approve" else 0
 
