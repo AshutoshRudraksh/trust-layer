@@ -83,12 +83,12 @@ def test_call_counts_match_the_plan_and_only_repetition_0_candidates_are_replaye
     r0 = [r for r in decisions if r["step"] == "poison" and r["result"] == "pass"]
     replayed = [r for r in decisions if r["step"] == "replay"]
     assert sorted(r["lesson_id"] for r in replayed) == sorted(r["lesson_id"] for r in r0) and r0
-    cycle0_fails = [r for r in decisions if r["step"] == "grade" and r["result"] == "fail"]
-    assert fake.calls.count("distill") == len(cycle0_fails)
-    assert fake.calls.count("worker") == 9 + 2 * 3 + len(replayed) * 2 * 3
+    distilled = sum(len(f.read_text().splitlines()) for f in out.glob("candidates_r*_*.jsonl"))
+    assert fake.calls.count("distill") == distilled  # one call per failed criterion, all three repetitions
+    unique = {r["lesson_id"] for r in replayed}  # a text found in both copies shares one id and one replay run
+    assert fake.calls.count("worker") == 9 + 2 * 3 + len(unique) * 2 * 3
     for rep in (1, 2):
-        later = [l for l in (out / f"candidates_r{rep}_clean.jsonl").read_text().splitlines()]
-        assert later and not set(later) & {r["lesson_id"] for r in replayed} - set()
+        assert (out / f"candidates_r{rep}_clean.jsonl").read_text()  # written for the record, never replayed
     assert {r["run_id"] for r in _rows(out / "replay_reps.tsv")} == {"R_r0", "R_r1", "R_r2"}
     assert {r["lesson_id"] for r in _rows(out / "replay_reps.tsv")} == {r["lesson_id"] for r in replayed}
     assert "awaiting pairs" in (out / "status.txt").read_text()
