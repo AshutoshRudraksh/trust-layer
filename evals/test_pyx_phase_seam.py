@@ -85,6 +85,20 @@ def test_live_phase_refuses_without_a_shared_ledger_env(monkeypatch, tmp_path) -
     assert not out.exists()
 
 
+def test_live_phase2_refuses_without_a_shared_ledger_env(monkeypatch, tmp_path) -> None:
+    monkeypatch.delenv("PYX_SPEND_LEDGER", raising=False)
+    monkeypatch.setattr("agents.spend_ledger.SpendLedger", _Boom)
+    monkeypatch.setattr("agents.meta_client.MetaModelClient", _Boom)
+    monkeypatch.setattr("agents.baseten_client.BasetenClient", _Boom)
+    monkeypatch.setattr("pyx.worker.worker_client", _Boom)
+    ev, h = _eval(tmp_path)
+    out = tmp_path / "o2"
+    rc = main(["phase2", "--run-id", "X", "--out", str(out), "--eval", str(ev),
+               "--eval-sha256", h, "--reps", "3"])
+    assert rc == 2
+    assert not out.exists()
+
+
 def test_live_phase_with_the_env_set_to_an_existing_file_passes_the_guard(monkeypatch, tmp_path) -> None:
     ledger_file = tmp_path / "shared.json"
     ledger_file.write_text("{}\n")
