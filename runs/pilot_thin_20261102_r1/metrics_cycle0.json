@@ -1,0 +1,9 @@
+{
+  "criterion_pass_rate": 0.5652173913043478,
+  "answers_passed": 0,
+  "inconclusive_rate": 0.041666666666666664,
+  "judge_disagreement_rate": 0.0,
+  "judge_b_malformed_rate": 0.3333333333333333,
+  "self_agreement_a": 0.0,
+  "self_agreement_b": 0.0
+}

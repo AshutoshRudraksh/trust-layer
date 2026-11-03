@@ -1,0 +1,21 @@
+lesson_id	step	result	reason_code	criteria_fixed	criteria_broken	judge_a	judge_b	seed	run_id	flags	task_id	copy
+	grade	fail			T1.C1,T1.C4,T1.C8	T1.C8=FAIL	T1.C8=FAIL	0	thin_20261102_r1_replay_replay_7b70872f		T1	clean
+	grade	fail			T2.C1,T2.C3,T2.C4,T2.C7,T2.C8	T2.C8=FAIL	T2.C8=FAIL	0	thin_20261102_r1_replay_replay_7b70872f		T2	clean
+	grade	fail			T1.C1,T1.C4,T1.C8	T1.C8=FAIL	T1.C8=FAIL	0	thin_20261102_r1_replay_replay_4a3c686f		T1	clean
+	grade	fail			T2.C1,T2.C2,T2.C3,T2.C4,T2.C5,T2.C7,T2.C8	T2.C8=FAIL	T2.C8=FAIL	0	thin_20261102_r1_replay_replay_4a3c686f		T2	clean
+	grade	fail	JUDGE_DISAGREE		T1.C1,T1.C4	T1.C8=FAIL	T1.C8=PASS	0	thin_20261102_r1_replay_replay_5e6890ae	JUDGE_DISAGREE	T1	clean
+	grade	fail			T2.C1,T2.C3,T2.C4,T2.C5,T2.C7,T2.C8	T2.C8=FAIL	T2.C8=FAIL	0	thin_20261102_r1_replay_replay_5e6890ae		T2	clean
+	grade	fail			T1.C1,T1.C4,T1.C8	T1.C8=FAIL	T1.C8=FAIL	0	thin_20261102_r1_replay_replay_b7404c81		T1	clean
+	grade	fail			T2.C1,T2.C3,T2.C4,T2.C5,T2.C7,T2.C8	T2.C8=FAIL	T2.C8=FAIL	0	thin_20261102_r1_replay_replay_b7404c81		T2	clean
+	grade	fail			T1.C1,T1.C4,T1.C8	T1.C8=FAIL	T1.C8=FAIL	0	thin_20261102_r1_replay_replay_e228efe3		T1	clean
+	grade	fail			T2.C1,T2.C3,T2.C4,T2.C5	T2.C8=PASS	T2.C8=PASS	0	thin_20261102_r1_replay_replay_e228efe3		T2	clean
+	grade	fail			T1.C1,T1.C4,T1.C8	T1.C8=FAIL	T1.C8=FAIL	0	thin_20261102_r1_replay_replay_b6bde26c		T1	clean
+	grade	fail			T2.C1,T2.C2,T2.C3,T2.C4,T2.C5,T2.C7,T2.C8	T2.C8=FAIL	T2.C8=FAIL	0	thin_20261102_r1_replay_replay_b6bde26c		T2	clean
+	grade	fail			T1.C1,T1.C4,T1.C8	T1.C8=FAIL	T1.C8=FAIL	0	thin_20261102_r1_replay_replay_c99444e5		T1	clean
+	grade	fail	JUDGE_DISAGREE		T2.C1,T2.C3,T2.C4,T2.C5,T2.C7	T2.C8=FAIL	T2.C8=PASS	0	thin_20261102_r1_replay_replay_c99444e5	JUDGE_DISAGREE	T2	clean
+	grade	fail			T1.C1,T1.C4,T1.C8	T1.C8=FAIL	T1.C8=FAIL	0	thin_20261102_r1_replay_replay_23e9adb6		T1	clean
+	grade	fail			T2.C1,T2.C2,T2.C3,T2.C4,T2.C5,T2.C7,T2.C8	T2.C8=FAIL	T2.C8=FAIL	0	thin_20261102_r1_replay_replay_23e9adb6		T2	clean
+	grade	fail			T1.C1,T1.C4,T1.C8	T1.C8=FAIL	T1.C8=FAIL	0	thin_20261102_r1_replay_replay_f83342d9		T1	clean
+	grade	fail			T2.C1,T2.C3,T2.C4,T2.C5,T2.C7,T2.C8	T2.C8=FAIL	T2.C8=FAIL	0	thin_20261102_r1_replay_replay_f83342d9		T2	clean
+	grade	fail			T1.C1,T1.C4	T1.C8=PASS	T1.C8=PASS	0	thin_20261102_r1_replay_replay_d6d6485e		T1	clean
+	grade	fail	JUDGE_DISAGREE		T2.C3,T2.C4,T2.C5,T2.C7	T2.C8=FAIL	T2.C8=PASS	0	thin_20261102_r1_replay_replay_d6d6485e	JUDGE_DISAGREE	T2	clean

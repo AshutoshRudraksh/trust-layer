@@ -1,0 +1,33 @@
+keys: MODEL_API_KEY=set BASETEN_API_KEY=set
+ledger before: meta=$0.02754570 baseten=$0.12110175
+[cycle0 worker] new meta=$0.00535380 baseten=$0.00000000
+[poison condition worker] new meta=$0.00760810 baseten=$0.00000000
+[grade T1 clean] new meta=$0.00791320 baseten=$0.01057575
+[grade T2 clean] new meta=$0.00830160 baseten=$0.03526625
+[grade T1 planted] new meta=$0.00864320 baseten=$0.04147050
+[distill T1 clean] new meta=$0.00975380 baseten=$0.04147050
+[distill T2 clean] new meta=$0.01159200 baseten=$0.04147050
+[distill T1 planted] new meta=$0.01281850 baseten=$0.04147050
+distill faults: []
+[replay thin_20261102_r1_replay_replay_7b70872f T1] new meta=$0.01541010 baseten=$0.04851625
+[replay thin_20261102_r1_replay_replay_7b70872f T2] new meta=$0.01971680 baseten=$0.05987750
+[replay thin_20261102_r1_replay_replay_4a3c686f T1] new meta=$0.02239410 baseten=$0.06749125
+[replay thin_20261102_r1_replay_replay_4a3c686f T2] new meta=$0.02644730 baseten=$0.07431000
+[replay thin_20261102_r1_replay_replay_5e6890ae T1] new meta=$0.02906200 baseten=$0.08485550
+[replay thin_20261102_r1_replay_replay_5e6890ae T2] new meta=$0.03322670 baseten=$0.09241375
+[replay thin_20261102_r1_replay_replay_b7404c81 T1] new meta=$0.03578770 baseten=$0.09979875
+[replay thin_20261102_r1_replay_replay_b7404c81 T2] new meta=$0.04001960 baseten=$0.11201175
+[replay thin_20261102_r1_replay_replay_e228efe3 T1] new meta=$0.04263920 baseten=$0.11898775
+[replay thin_20261102_r1_replay_replay_e228efe3 T2] new meta=$0.04687850 baseten=$0.12973750
+[replay thin_20261102_r1_replay_replay_b6bde26c T1] new meta=$0.04961270 baseten=$0.13697500
+[replay thin_20261102_r1_replay_replay_b6bde26c T2] new meta=$0.05371480 baseten=$0.14373475
+[replay thin_20261102_r1_replay_replay_c99444e5 T1] new meta=$0.05643230 baseten=$0.15040225
+[replay thin_20261102_r1_replay_replay_c99444e5 T2] new meta=$0.06069950 baseten=$0.16176225
+[replay thin_20261102_r1_replay_replay_23e9adb6 T1] new meta=$0.06332520 baseten=$0.16911250
+[replay thin_20261102_r1_replay_replay_23e9adb6 T2] new meta=$0.06749190 baseten=$0.17727500
+[replay thin_20261102_r1_replay_replay_f83342d9 T1] new meta=$0.07007730 baseten=$0.18387375
+[replay thin_20261102_r1_replay_replay_f83342d9 T2] new meta=$0.07436560 baseten=$0.21287975
+[replay thin_20261102_r1_replay_replay_d6d6485e T1] new meta=$0.07713920 baseten=$0.22094950
+[replay thin_20261102_r1_replay_replay_d6d6485e T2] new meta=$0.08143130 baseten=$0.23296250
+ledger after: meta=$0.10897700 baseten=$0.35406425; new meta=$0.08143130 baseten=$0.23296250
+STOP before approval
