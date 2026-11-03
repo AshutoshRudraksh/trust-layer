@@ -18,3 +18,5 @@ Spend: Meta $0.08143130 new (ledger $0.02754570 to $0.10897700). Baseten $0.2329
 Keyless rerun: `python3 scripts/pilot/thin_run_keyless.py . runs/pilot_thin_20261102_r1 OUTDIR thin_20261102_r1` with keys unset and socket connect blocked reproduces decisions.tsv, replay_grades.tsv, answers.jsonl and both candidate stores byte for byte, with zero unused log lines. decisions.tsv sha256 3fdf3959e5472094cc787df9e58352ea378f8d88659703ffe77943f65ac3bba9.
 
 Recorded model text and paper text inside calls.jsonl and answers.jsonl contain em and en dashes. They are verbatim records and are left unchanged, since editing them would break the keyless rerun.
+
+Keyless rerun after H8: run it from a checkout of commit 993c6f3, where the record, the driver and the pre H8 code agree; on later main, H8 refuses the historical baseline the pilot used (UnpairedBaselineError).
