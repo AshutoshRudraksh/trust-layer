@@ -1,8 +1,11 @@
-"""HTTP POST with backoff on 429, shared by the Meta and Baseten clients.
+"""HTTP POST with backoff, shared by the Meta and Baseten clients.
 
-Three retries at 1, 2 and 4 seconds. A numeric Retry-After header replaces the
-scheduled wait. Errors name the URL and status only, never request headers, so
-an API key cannot leak through an exception message.
+Retries cover HTTP 429 and transient transport errors (httpx.TransportError,
+which includes read timeouts and connection errors) on one shared schedule:
+three retries at 1, 2 and 4 seconds. A numeric Retry-After header replaces the
+scheduled wait after a 429. Errors name the URL, the status, and the transport
+error type only, never request headers, so an API key cannot leak through an
+exception message.
 """
 from __future__ import annotations
 
@@ -16,6 +19,10 @@ BACKOFF_SCHEDULE_S: Sequence[float] = (1.0, 2.0, 4.0)
 
 class RateLimitedError(RuntimeError):
     """Raised when every retry still returned HTTP 429."""
+
+
+class TransportFailedError(RuntimeError):
+    """Raised when every attempt failed with a transport error."""
 
 
 def _retry_after_seconds(resp: httpx.Response) -> Optional[float]:
@@ -37,7 +44,15 @@ def post_with_backoff(
     schedule: Sequence[float] = BACKOFF_SCHEDULE_S,
 ) -> httpx.Response:
     for attempt in range(len(schedule) + 1):
-        resp = client.post(url, headers=headers, json=json)
+        try:
+            resp = client.post(url, headers=headers, json=json)
+        except httpx.TransportError as exc:
+            if attempt == len(schedule):
+                raise TransportFailedError(
+                    f"transport error from {url} after {len(schedule)} retries: {type(exc).__name__}"
+                ) from exc
+            sleep(schedule[attempt])
+            continue
         if resp.status_code != 429:
             resp.raise_for_status()
             return resp
