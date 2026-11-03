@@ -42,7 +42,7 @@ class EvalNotFrozenError(RuntimeError):
 
 def check_frozen(path: PathLike = EVAL_PATH, expected_sha256: str = "") -> str:
     data = Path(path).read_bytes()
-    if "Status: FROZEN" not in data.decode("utf-8").splitlines()[:5]:
+    if not any(l == "Status: FROZEN" or l.startswith("Status: FROZEN.") for l in data.decode("utf-8").splitlines()[:5]):
         raise EvalNotFrozenError(f"{path} does not say Status: FROZEN in its first lines")
     actual = hashlib.sha256(data).hexdigest()
     if actual != expected_sha256:
