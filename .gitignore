@@ -12,5 +12,6 @@ build/
 *.egg-info/
 
 # Pyx run artifacts, including the persistent spend ledger
-runs/
+runs/*
+!runs/pilot_thin_20261102_r1/
 *.sqlite

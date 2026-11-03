@@ -1,0 +1,24 @@
+lesson_id	step	result	reason_code	criteria_fixed	criteria_broken	judge_a	judge_b	seed	run_id	flags	task_id	copy
+	grade	fail			T1.C1,T1.C4,T1.C8	T1.C8=FAIL	T1.C8=FAIL	0	thin_20261102_r1_r0		T1	clean
+	grade	fail			T2.C1,T2.C3,T2.C4,T2.C5	T2.C8=FAIL	T2.C8=MALFORMED	0	thin_20261102_r1_r0	JUDGE_UNAVAILABLE	T2	clean
+	grade	fail			T1.C1,T1.C4,T1.C8	T1.C8=FAIL	T1.C8=FAIL	0	thin_20261102_r1_poison_r0		T1	planted
+L_T1.C1_dfa7b126	poison	pass						0	thin_20261102_r1_poison_check			clean
+L_T1.C4_24e6fd1e	poison	pass						0	thin_20261102_r1_poison_check			clean
+L_T1.C8_b9e33117	poison	pass						0	thin_20261102_r1_poison_check			clean
+L_T2.C1_67034bfa	poison	pass						0	thin_20261102_r1_poison_check			clean
+L_T2.C3_69f824eb	poison	pass						0	thin_20261102_r1_poison_check			clean
+L_T2.C4_70fbfea5	poison	pass						0	thin_20261102_r1_poison_check			clean
+L_T2.C5_28a0ee71	poison	pass						0	thin_20261102_r1_poison_check			clean
+L_T1.C1_c7a71f8e	poison	pass						0	thin_20261102_r1_poison_check			planted
+L_T1.C4_93105647	poison	pass						0	thin_20261102_r1_poison_check			planted
+L_T1.C8_88b47ff2	poison	pass						0	thin_20261102_r1_poison_check			planted
+L_T1.C1_dfa7b126	replay	fail	REGRESSION		T2.C7			0	thin_20261102_r1_replay		T1	clean
+L_T1.C4_24e6fd1e	replay	fail	REGRESSION		T2.C2,T2.C7			0	thin_20261102_r1_replay		T1	clean
+L_T1.C8_b9e33117	replay	fail	REGRESSION	T1.C8	T2.C7			0	thin_20261102_r1_replay		T1	clean
+L_T2.C1_67034bfa	replay	fail	REGRESSION		T2.C7			0	thin_20261102_r1_replay		T2	clean
+L_T2.C3_69f824eb	replay	fail	NO_FIX					0	thin_20261102_r1_replay		T2	clean
+L_T2.C4_70fbfea5	replay	fail	REGRESSION		T2.C2,T2.C7			0	thin_20261102_r1_replay		T2	clean
+L_T2.C5_28a0ee71	replay	fail	REGRESSION		T2.C7			0	thin_20261102_r1_replay		T2	clean
+L_T1.C1_c7a71f8e	replay	fail	REGRESSION		T2.C2,T2.C7			0	thin_20261102_r1_replay		T1	planted
+L_T1.C4_93105647	replay	fail	REGRESSION		T2.C7			0	thin_20261102_r1_replay		T1	planted
+L_T1.C8_88b47ff2	replay	fail	REGRESSION	T1.C8	T2.C7			0	thin_20261102_r1_replay		T1	planted
