@@ -52,15 +52,19 @@ class LogFirst:
         self.replay = ReplayClient(lines, judge=judge, kind=kind)
         self.live = live and RecordingClient(live, log, judge=judge, model=model, endpoint=endpoint, kind=kind)
 
-    def respond(self, prompt: str, **params: Any) -> Any:
+    def _serve(self, method: str, prompt: str, params: Dict[str, Any]) -> Any:
         try:
-            return self.replay.respond(prompt, **params)
+            return getattr(self.replay, method)(prompt, **params)
         except ReplayMissError:
             if not self.live:
                 raise
-            return self.live.respond(prompt, **params)
+            return getattr(self.live, method)(prompt, **params)
 
-    chat = respond
+    def respond(self, prompt: str, **params: Any) -> Any:
+        return self._serve("respond", prompt, params)
+
+    def chat(self, prompt: str, **params: Any) -> Any:
+        return self._serve("chat", prompt, params)
 
 
 class Engine:
@@ -75,6 +79,24 @@ class Engine:
         start = out / "budget_start.json"
         if ledger is not None and not start.exists():
             start.write_text(json.dumps({p: ledger.total_usd(p) for p in CAPS}) + "\n")
+
+    def spend_report(self) -> None:
+        """Write spend.json from the ledger: per provider start, now, run delta and cumulative."""
+        if self.ledger is None:
+            return
+        start_file = self.out / "budget_start.json"
+        if not start_file.exists():
+            return
+        start = json.loads(start_file.read_text())
+        data = {}
+        for p in CAPS:
+            now = self.ledger.total_usd(p)
+            data[p] = {"start": start[p], "now": now, "run_delta": now - start[p], "cumulative": now}
+        (self.out / "spend.json").write_text(json.dumps(data, indent=1, sort_keys=True) + "\n")
+        for p in CAPS:
+            d = data[p]
+            print(f"spend {p}: start ${d['start']:.8f}, run delta ${d['run_delta']:.8f}, "
+                  f"cumulative ${d['cumulative']:.8f}")
 
     def check_budget(self) -> None:
         if (self.out / "abort.txt").exists():
@@ -192,6 +214,7 @@ def _gate(eval_path: Path, eval_sha256: str, reps: int) -> bool:
 
 def _finish(eng: Engine, status: str) -> int:
     (eng.out / "status.txt").write_text(status + "\n")
+    eng.spend_report()
     print(status)
     if eng.keyless:
         print("served log seqs " + ",".join(map(str, eng.served())))
@@ -214,6 +237,7 @@ def phase1(out: Any, run_id: str, eval_sha256: str, reps: int, pairs: Optional[P
         if not (out / "pairs.json").exists():
             _stage2(eng, reps, pairs)
     except BudgetAbort:
+        eng.spend_report()
         print((out / "abort.txt").read_text().strip())
         return 4
     return _finish(eng, "ready for approval")
@@ -265,6 +289,7 @@ def phase2(out: Any, run_id: str, eval_sha256: str, reps: int, live: Optional[Di
                     cells.append((f"cycle1/{ctx.arm}/{task_id}", a, r))
                     contexts.append(f"{ctx.arm}\t{task_id}\t{rep}\t{','.join(ctx.lesson_ids)}")
     except BudgetAbort:
+        eng.spend_report()
         print((out / "abort.txt").read_text().strip())
         return 4
     (out / "contexts.tsv").write_text("".join(c + "\n" for c in contexts))
