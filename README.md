@@ -107,6 +107,14 @@ export MODEL_API_KEY=<your Meta Model API key>
 export BASETEN_API_KEY=<your Baseten API key>
 ```
 
+A live phase also needs a shared spend ledger file, and refuses to
+start without one. Create it first and point the run at it:
+
+```bash
+echo '{"version": 1, "providers": {}}' > ~/pyx-ledger.json
+export PYX_SPEND_LEDGER=~/pyx-ledger.json
+```
+
 With no key set, nothing is called: the pipeline's keyless mode
 replays recorded calls, and the scaffold client falls back to a
 deterministic dry run. Neither path reaches a model.
