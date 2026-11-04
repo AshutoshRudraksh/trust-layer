@@ -1,0 +1,146 @@
+{
+ "cycle0": {
+  "answers_passed": 0,
+  "criterion_pass_rate": 0.5138888888888888,
+  "inconclusive_rate": 0.0,
+  "judge_b_malformed_rate": 0.0,
+  "judge_disagreement_rate": 0.1111111111111111,
+  "self_agreement_a": 1.0,
+  "self_agreement_b": 0.6666666666666666
+ },
+ "cycle0/T1": {
+  "answers_passed": 0,
+  "criterion_pass_rate": 0.625,
+  "inconclusive_rate": 0.0,
+  "judge_b_malformed_rate": 0.0,
+  "judge_disagreement_rate": 0.0,
+  "self_agreement_a": 1.0,
+  "self_agreement_b": 1.0
+ },
+ "cycle0/T1_planted": {
+  "answers_passed": 0,
+  "criterion_pass_rate": 0.625,
+  "inconclusive_rate": 0.0,
+  "judge_b_malformed_rate": 0.0,
+  "judge_disagreement_rate": 0.0,
+  "self_agreement_a": 1.0,
+  "self_agreement_b": 1.0
+ },
+ "cycle0/T2": {
+  "answers_passed": 0,
+  "criterion_pass_rate": 0.2916666666666667,
+  "inconclusive_rate": 0.0,
+  "judge_b_malformed_rate": 0.0,
+  "judge_disagreement_rate": 0.3333333333333333,
+  "self_agreement_a": 1.0,
+  "self_agreement_b": 0.0
+ },
+ "cycle1/earned_lessons": {
+  "answers_passed": 0,
+  "criterion_pass_rate": 0.625,
+  "inconclusive_rate": 0.0,
+  "judge_b_malformed_rate": 0.0,
+  "judge_disagreement_rate": 0.0,
+  "self_agreement_a": 1.0,
+  "self_agreement_b": 1.0
+ },
+ "cycle1/earned_lessons/T1": {
+  "answers_passed": 0,
+  "criterion_pass_rate": 0.75,
+  "inconclusive_rate": 0.0,
+  "judge_b_malformed_rate": 0.0,
+  "judge_disagreement_rate": 0.0,
+  "self_agreement_a": 1.0,
+  "self_agreement_b": 1.0
+ },
+ "cycle1/earned_lessons/T2": {
+  "answers_passed": 0,
+  "criterion_pass_rate": 0.5,
+  "inconclusive_rate": 0.0,
+  "judge_b_malformed_rate": 0.0,
+  "judge_disagreement_rate": 0.0,
+  "self_agreement_a": 1.0,
+  "self_agreement_b": 1.0
+ },
+ "cycle1/free_lessons": {
+  "answers_passed": 0,
+  "criterion_pass_rate": 0.5208333333333334,
+  "inconclusive_rate": 0.0,
+  "judge_b_malformed_rate": 0.0,
+  "judge_disagreement_rate": 0.0,
+  "self_agreement_a": 0.75,
+  "self_agreement_b": 0.75
+ },
+ "cycle1/free_lessons/T1": {
+  "answers_passed": 0,
+  "criterion_pass_rate": 0.75,
+  "inconclusive_rate": 0.0,
+  "judge_b_malformed_rate": 0.0,
+  "judge_disagreement_rate": 0.0,
+  "self_agreement_a": 1.0,
+  "self_agreement_b": 1.0
+ },
+ "cycle1/free_lessons/T2": {
+  "answers_passed": 0,
+  "criterion_pass_rate": 0.2916666666666667,
+  "inconclusive_rate": 0.0,
+  "judge_b_malformed_rate": 0.0,
+  "judge_disagreement_rate": 0.0,
+  "self_agreement_a": 0.5,
+  "self_agreement_b": 0.5
+ },
+ "cycle1/no_memory": {
+  "answers_passed": 0,
+  "criterion_pass_rate": 0.4375,
+  "inconclusive_rate": 0.0,
+  "judge_b_malformed_rate": 0.16666666666666666,
+  "judge_disagreement_rate": 0.0,
+  "self_agreement_a": 1.0,
+  "self_agreement_b": 1.0
+ },
+ "cycle1/no_memory/T1": {
+  "answers_passed": 0,
+  "criterion_pass_rate": 0.625,
+  "inconclusive_rate": 0.0,
+  "judge_b_malformed_rate": 0.0,
+  "judge_disagreement_rate": 0.0,
+  "self_agreement_a": 1.0,
+  "self_agreement_b": 1.0
+ },
+ "cycle1/no_memory/T2": {
+  "answers_passed": 0,
+  "criterion_pass_rate": 0.25,
+  "inconclusive_rate": 0.0,
+  "judge_b_malformed_rate": 0.3333333333333333,
+  "judge_disagreement_rate": 0.0,
+  "self_agreement_a": 1.0,
+  "self_agreement_b": 1.0
+ },
+ "cycle1/raw_traces": {
+  "answers_passed": 0,
+  "criterion_pass_rate": 0.4375,
+  "inconclusive_rate": 0.0,
+  "judge_b_malformed_rate": 0.16666666666666666,
+  "judge_disagreement_rate": 0.16666666666666666,
+  "self_agreement_a": 1.0,
+  "self_agreement_b": 0.75
+ },
+ "cycle1/raw_traces/T1": {
+  "answers_passed": 0,
+  "criterion_pass_rate": 0.625,
+  "inconclusive_rate": 0.0,
+  "judge_b_malformed_rate": 0.0,
+  "judge_disagreement_rate": 0.0,
+  "self_agreement_a": 1.0,
+  "self_agreement_b": 1.0
+ },
+ "cycle1/raw_traces/T2": {
+  "answers_passed": 0,
+  "criterion_pass_rate": 0.25,
+  "inconclusive_rate": 0.0,
+  "judge_b_malformed_rate": 0.3333333333333333,
+  "judge_disagreement_rate": 0.3333333333333333,
+  "self_agreement_a": 1.0,
+  "self_agreement_b": 0.5
+ }
+}

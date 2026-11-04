@@ -1,0 +1,72 @@
+lesson_id	step	result	reason_code	criteria_fixed	criteria_broken	judge_a	judge_b	seed	run_id	flags	task_id	copy
+	grade	fail			T1.C1,T1.C4,T1.C8	T1.C8=FAIL	T1.C8=FAIL	0	pyx_h9_20261102b_r0_replay_e3b0c442		T1	clean
+	grade	fail			T2.C1,T2.C3,T2.C4,T2.C5,T2.C7,T2.C8	T2.C8=FAIL	T2.C8=FAIL	0	pyx_h9_20261102b_r0_replay_e3b0c442		T2	clean
+	grade	fail			T1.C1,T1.C4,T1.C8	T1.C8=FAIL	T1.C8=FAIL	1	pyx_h9_20261102b_r1_replay_e3b0c442		T1	clean
+	grade	fail			T2.C1,T2.C3,T2.C4,T2.C5,T2.C7,T2.C8	T2.C8=FAIL	T2.C8=FAIL	1	pyx_h9_20261102b_r1_replay_e3b0c442		T2	clean
+	grade	fail			T1.C1,T1.C4,T1.C8	T1.C8=FAIL	T1.C8=FAIL	2	pyx_h9_20261102b_r2_replay_e3b0c442		T1	clean
+	grade	fail			T2.C1,T2.C3,T2.C4,T2.C5,T2.C7,T2.C8	T2.C8=FAIL	T2.C8=FAIL	2	pyx_h9_20261102b_r2_replay_e3b0c442		T2	clean
+	grade	fail			T1.C1,T1.C4,T1.C8	T1.C8=FAIL	T1.C8=FAIL	0	pyx_h9_20261102b_r0_replay_81b83054		T1	clean
+	grade	fail	JUDGE_DISAGREE		T2.C1,T2.C3,T2.C4,T2.C5	T2.C8=FAIL	T2.C8=PASS	0	pyx_h9_20261102b_r0_replay_81b83054	JUDGE_DISAGREE	T2	clean
+	grade	fail			T1.C1,T1.C4,T1.C8	T1.C8=FAIL	T1.C8=FAIL	1	pyx_h9_20261102b_r1_replay_81b83054		T1	clean
+	grade	fail			T2.C1,T2.C3,T2.C4,T2.C5,T2.C8	T2.C8=FAIL	T2.C8=FAIL	1	pyx_h9_20261102b_r1_replay_81b83054		T2	clean
+	grade	fail			T1.C1,T1.C4,T1.C8	T1.C8=FAIL	T1.C8=FAIL	2	pyx_h9_20261102b_r2_replay_81b83054		T1	clean
+	grade	fail			T2.C1,T2.C3,T2.C4,T2.C5,T2.C7,T2.C8	T2.C8=FAIL	T2.C8=FAIL	2	pyx_h9_20261102b_r2_replay_81b83054		T2	clean
+	grade	fail			T1.C1,T1.C4,T1.C8	T1.C8=FAIL	T1.C8=FAIL	0	pyx_h9_20261102b_r0_replay_b7daf69c		T1	clean
+	grade	fail			T2.C1,T2.C3,T2.C4,T2.C5,T2.C7,T2.C8	T2.C8=FAIL	T2.C8=FAIL	0	pyx_h9_20261102b_r0_replay_b7daf69c		T2	clean
+	grade	fail			T1.C1,T1.C4,T1.C8	T1.C8=FAIL	T1.C8=FAIL	1	pyx_h9_20261102b_r1_replay_b7daf69c		T1	clean
+	grade	fail			T2.C1,T2.C3,T2.C4,T2.C5,T2.C7,T2.C8	T2.C8=FAIL	T2.C8=FAIL	1	pyx_h9_20261102b_r1_replay_b7daf69c		T2	clean
+	grade	fail			T1.C1,T1.C4,T1.C8	T1.C8=FAIL	T1.C8=FAIL	2	pyx_h9_20261102b_r2_replay_b7daf69c		T1	clean
+	grade	fail			T2.C1,T2.C3,T2.C4,T2.C5,T2.C7	T2.C8=FAIL	T2.C8=MALFORMED	2	pyx_h9_20261102b_r2_replay_b7daf69c	JUDGE_UNAVAILABLE	T2	clean
+	grade	fail			T1.C1,T1.C4	T1.C8=PASS	T1.C8=PASS	0	pyx_h9_20261102b_r0_replay_66a563d3		T1	clean
+	grade	fail			T2.C1,T2.C3,T2.C4,T2.C5	T2.C8=PASS	T2.C8=PASS	0	pyx_h9_20261102b_r0_replay_66a563d3		T2	clean
+	grade	fail			T1.C1,T1.C4	T1.C8=PASS	T1.C8=PASS	1	pyx_h9_20261102b_r1_replay_66a563d3		T1	clean
+	grade	fail			T2.C3,T2.C4,T2.C5,T2.C7	T2.C8=PASS	T2.C8=PASS	1	pyx_h9_20261102b_r1_replay_66a563d3		T2	clean
+	grade	fail			T2.C1,T2.C3,T2.C4,T2.C5	T2.C8=PASS	T2.C8=PASS	2	pyx_h9_20261102b_r2_replay_66a563d3		T2	clean
+	grade	fail			T1.C1,T1.C4,T1.C8	T1.C8=FAIL	T1.C8=FAIL	0	pyx_h9_20261102b_r0_replay_2572416a		T1	clean
+	grade	fail			T2.C1,T2.C3,T2.C4,T2.C5,T2.C7,T2.C8	T2.C8=FAIL	T2.C8=FAIL	0	pyx_h9_20261102b_r0_replay_2572416a		T2	clean
+	grade	fail			T1.C1,T1.C4,T1.C8	T1.C8=FAIL	T1.C8=FAIL	1	pyx_h9_20261102b_r1_replay_2572416a		T1	clean
+	grade	fail			T2.C1,T2.C3,T2.C4,T2.C5,T2.C7,T2.C8	T2.C8=FAIL	T2.C8=FAIL	1	pyx_h9_20261102b_r1_replay_2572416a		T2	clean
+	grade	fail			T1.C1,T1.C4,T1.C8	T1.C8=FAIL	T1.C8=FAIL	2	pyx_h9_20261102b_r2_replay_2572416a		T1	clean
+	grade	fail			T2.C1,T2.C3,T2.C4,T2.C5,T2.C7,T2.C8	T2.C8=FAIL	T2.C8=FAIL	2	pyx_h9_20261102b_r2_replay_2572416a		T2	clean
+	grade	fail			T1.C1,T1.C4,T1.C8	T1.C8=FAIL	T1.C8=FAIL	0	pyx_h9_20261102b_r0_replay_fdabbd64		T1	clean
+	grade	fail	JUDGE_DISAGREE		T2.C1,T2.C3,T2.C4,T2.C5	T2.C8=FAIL	T2.C8=PASS	0	pyx_h9_20261102b_r0_replay_fdabbd64	JUDGE_DISAGREE	T2	clean
+	grade	fail			T1.C1,T1.C4,T1.C8	T1.C8=FAIL	T1.C8=FAIL	1	pyx_h9_20261102b_r1_replay_fdabbd64		T1	clean
+	grade	fail			T2.C1,T2.C3,T2.C4,T2.C5,T2.C7,T2.C8	T2.C8=FAIL	T2.C8=FAIL	1	pyx_h9_20261102b_r1_replay_fdabbd64		T2	clean
+	grade	fail			T1.C1,T1.C4,T1.C8	T1.C8=FAIL	T1.C8=FAIL	2	pyx_h9_20261102b_r2_replay_fdabbd64		T1	clean
+	grade	fail			T2.C1,T2.C3,T2.C4,T2.C5,T2.C7,T2.C8	T2.C8=FAIL	T2.C8=FAIL	2	pyx_h9_20261102b_r2_replay_fdabbd64		T2	clean
+	grade	fail			T1.C1,T1.C4,T1.C8	T1.C8=FAIL	T1.C8=FAIL	0	pyx_h9_20261102b_r0_replay_fc7f882b		T1	clean
+	grade	fail			T2.C1,T2.C3,T2.C4,T2.C5,T2.C7,T2.C8	T2.C8=FAIL	T2.C8=FAIL	0	pyx_h9_20261102b_r0_replay_fc7f882b		T2	clean
+	grade	fail			T1.C1,T1.C4,T1.C8	T1.C8=FAIL	T1.C8=FAIL	1	pyx_h9_20261102b_r1_replay_fc7f882b		T1	clean
+	grade	fail			T2.C1,T2.C3,T2.C4,T2.C5,T2.C7,T2.C8	T2.C8=FAIL	T2.C8=FAIL	1	pyx_h9_20261102b_r1_replay_fc7f882b		T2	clean
+	grade	fail			T1.C1,T1.C4,T1.C8	T1.C8=FAIL	T1.C8=FAIL	2	pyx_h9_20261102b_r2_replay_fc7f882b		T1	clean
+	grade	fail			T2.C1,T2.C3,T2.C4,T2.C5,T2.C7,T2.C8	T2.C8=FAIL	T2.C8=FAIL	2	pyx_h9_20261102b_r2_replay_fc7f882b		T2	clean
+	grade	fail			T1.C1,T1.C4,T1.C8	T1.C8=FAIL	T1.C8=FAIL	0	pyx_h9_20261102b_r0_replay_a6478448		T1	clean
+	grade	fail			T2.C1,T2.C2,T2.C3,T2.C4,T2.C5,T2.C7,T2.C8	T2.C8=FAIL	T2.C8=FAIL	0	pyx_h9_20261102b_r0_replay_a6478448		T2	clean
+	grade	fail			T1.C1,T1.C4,T1.C8	T1.C8=FAIL	T1.C8=FAIL	1	pyx_h9_20261102b_r1_replay_a6478448		T1	clean
+	grade	fail			T2.C1,T2.C2,T2.C3,T2.C4,T2.C5,T2.C7,T2.C8	T2.C8=FAIL	T2.C8=FAIL	1	pyx_h9_20261102b_r1_replay_a6478448		T2	clean
+	grade	fail			T1.C1,T1.C4,T1.C8	T1.C8=FAIL	T1.C8=FAIL	2	pyx_h9_20261102b_r2_replay_a6478448		T1	clean
+	grade	fail			T2.C1,T2.C2,T2.C3,T2.C4,T2.C5,T2.C7,T2.C8	T2.C8=FAIL	T2.C8=FAIL	2	pyx_h9_20261102b_r2_replay_a6478448		T2	clean
+	grade	fail			T1.C1,T1.C4,T1.C8	T1.C8=FAIL	T1.C8=FAIL	0	pyx_h9_20261102b_r0_replay_06a238eb		T1	clean
+	grade	fail			T2.C1,T2.C3,T2.C4,T2.C5,T2.C7	T2.C8=PASS	T2.C8=PASS	0	pyx_h9_20261102b_r0_replay_06a238eb		T2	clean
+	grade	fail			T1.C1,T1.C4,T1.C8	T1.C8=FAIL	T1.C8=FAIL	1	pyx_h9_20261102b_r1_replay_06a238eb		T1	clean
+	grade	fail			T2.C1,T2.C3,T2.C4,T2.C5,T2.C7	T2.C8=PASS	T2.C8=PASS	1	pyx_h9_20261102b_r1_replay_06a238eb		T2	clean
+	grade	fail			T1.C1,T1.C4,T1.C8	T1.C8=FAIL	T1.C8=FAIL	2	pyx_h9_20261102b_r2_replay_06a238eb		T1	clean
+	grade	fail			T2.C1,T2.C3,T2.C4,T2.C5,T2.C7,T2.C8	T2.C8=FAIL	T2.C8=FAIL	2	pyx_h9_20261102b_r2_replay_06a238eb		T2	clean
+	grade	fail			T1.C1,T1.C4,T1.C8	T1.C8=FAIL	T1.C8=FAIL	0	pyx_h9_20261102b_r0_replay_916c5c0b		T1	clean
+	grade	fail			T2.C1,T2.C3,T2.C4,T2.C5,T2.C7,T2.C8	T2.C8=FAIL	T2.C8=FAIL	0	pyx_h9_20261102b_r0_replay_916c5c0b		T2	clean
+	grade	fail			T1.C1,T1.C4,T1.C8	T1.C8=FAIL	T1.C8=FAIL	1	pyx_h9_20261102b_r1_replay_916c5c0b		T1	clean
+	grade	fail			T2.C1,T2.C3,T2.C4,T2.C5,T2.C7	T2.C8=FAIL	T2.C8=MALFORMED	1	pyx_h9_20261102b_r1_replay_916c5c0b	JUDGE_UNAVAILABLE	T2	clean
+	grade	fail			T1.C1,T1.C4,T1.C8	T1.C8=FAIL	T1.C8=FAIL	2	pyx_h9_20261102b_r2_replay_916c5c0b		T1	clean
+	grade	fail			T2.C1,T2.C2,T2.C3,T2.C4,T2.C5,T2.C7,T2.C8	T2.C8=FAIL	T2.C8=FAIL	2	pyx_h9_20261102b_r2_replay_916c5c0b		T2	clean
+	grade	fail			T1.C1,T1.C4,T1.C8	T1.C8=FAIL	T1.C8=FAIL	0	pyx_h9_20261102b_r0_replay_b5ffc38b		T1	clean
+	grade	fail			T2.C1,T2.C2,T2.C3,T2.C4,T2.C5,T2.C7,T2.C8	T2.C8=FAIL	T2.C8=FAIL	0	pyx_h9_20261102b_r0_replay_b5ffc38b		T2	clean
+	grade	fail			T1.C1,T1.C4,T1.C8	T1.C8=FAIL	T1.C8=FAIL	1	pyx_h9_20261102b_r1_replay_b5ffc38b		T1	clean
+	grade	fail			T2.C1,T2.C2,T2.C3,T2.C4,T2.C5,T2.C7,T2.C8	T2.C8=FAIL	T2.C8=FAIL	1	pyx_h9_20261102b_r1_replay_b5ffc38b		T2	clean
+	grade	fail			T1.C1,T1.C4,T1.C8	T1.C8=FAIL	T1.C8=FAIL	2	pyx_h9_20261102b_r2_replay_b5ffc38b		T1	clean
+	grade	fail			T2.C1,T2.C3,T2.C4,T2.C5,T2.C7	T2.C8=FAIL	T2.C8=MALFORMED	2	pyx_h9_20261102b_r2_replay_b5ffc38b	JUDGE_UNAVAILABLE	T2	clean
+	grade	fail	JUDGE_DISAGREE		T1.C1,T1.C4	T1.C8=FAIL	T1.C8=PASS	0	pyx_h9_20261102b_r0_replay_928d1fa9	JUDGE_DISAGREE	T1	clean
+	grade	fail			T2.C1,T2.C3,T2.C4,T2.C5	T2.C8=FAIL	T2.C8=MALFORMED	0	pyx_h9_20261102b_r0_replay_928d1fa9	JUDGE_UNAVAILABLE	T2	clean
+	grade	fail			T1.C1,T1.C4,T1.C8	T1.C8=FAIL	T1.C8=FAIL	1	pyx_h9_20261102b_r1_replay_928d1fa9		T1	clean
+	grade	fail			T2.C1,T2.C3,T2.C4,T2.C7,T2.C8	T2.C8=FAIL	T2.C8=FAIL	1	pyx_h9_20261102b_r1_replay_928d1fa9		T2	clean
+	grade	fail			T1.C1,T1.C4,T1.C8	T1.C8=FAIL	T1.C8=FAIL	2	pyx_h9_20261102b_r2_replay_928d1fa9		T1	clean
+	grade	fail			T2.C1,T2.C3,T2.C4,T2.C5,T2.C8	T2.C8=FAIL	T2.C8=FAIL	2	pyx_h9_20261102b_r2_replay_928d1fa9		T2	clean
