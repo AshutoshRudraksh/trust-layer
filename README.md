@@ -107,6 +107,10 @@ export MODEL_API_KEY=<your Meta Model API key>
 export BASETEN_API_KEY=<your Baseten API key>
 ```
 
+With no key set, nothing is called: the pipeline's keyless mode
+replays recorded calls, and the scaffold client falls back to a
+deterministic dry run. Neither path reaches a model.
+
 ## Inspect the bank over MCP
 
 The counted run's bank is served by a read only MCP server with
@@ -129,7 +133,9 @@ experiment that is this submission, was designed and built on top of
 it during the event: the frozen EVAL.md protocol, the grading and
 judging pipeline, the distiller, the poison screen, paired replay,
 the two command counted run, the approval CLI, the keyless replay
-engine, and the MCP bank server. The surrounding scaffold (api/,
+engine, and the MCP bank server. Both the scaffold and Pyx were
+written in this repository during the event period; no code in this
+repository predates the event. The surrounding scaffold (api/,
 gate/, locks/, room/) is context the experiment plugs into, not the
 submission itself.
 
