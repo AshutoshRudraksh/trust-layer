@@ -39,6 +39,7 @@ class ReplayClient:
                  fallback: bool = False) -> None:
         self.judge = judge
         self.fallback = fallback
+        self.fallback_serves = 0
         self._lines = [l for l in lines if l.get("kind") == kind and l.get("judge") == judge]
         self.model = self._lines[0]["model"] if self._lines else ""
         self.endpoint = self._lines[0]["endpoint"] if self._lines else ""
@@ -60,6 +61,7 @@ class ReplayClient:
         if self.fallback:
             for line in reversed(self._lines):
                 if line["key"] == key:
+                    self.fallback_serves += 1
                     return self._deliver(line)
         raise ReplayMissError(
             f"no unused log entry for judge {self.judge}, model {self.model}, key {key[:12]}, "

@@ -124,6 +124,7 @@ class Engine:
                                if l["task_id"] == task_id and l["answer_sha256"] == sha), None)
             if reused is not None:
                 self.used.add(reused)
+                self.checker_fallbacks = getattr(self, "checker_fallbacks", 0) + 1
                 _check_against_log(task_id, text, self.checks[reused])
             elif self.keyless:
                 raise ReplayMissError(f"no unused checker line for {task_id} {sha[:12]}")
@@ -143,6 +144,9 @@ class Engine:
         if new:
             DecisionLog(self.out / tsv).append(rows_from_grade(report, rid, seed, copy))
         return answers[0], report
+
+    def fallback_serves(self) -> int:
+        return sum(c.replay.fallback_serves for c in self.c.values()) + getattr(self, "checker_fallbacks", 0)
 
     def served(self) -> List[int]:
         seqs = {c.replay._lines[i]["seq"] for c in self.c.values() for i in c.replay._served}
@@ -226,6 +230,7 @@ def _finish(eng: Engine, status: str) -> int:
     print(status)
     if eng.keyless:
         print("served log seqs " + ",".join(map(str, eng.served())))
+        print(f"fallback serves: {eng.fallback_serves()}")
     return 0
 
 

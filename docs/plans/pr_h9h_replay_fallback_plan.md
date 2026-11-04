@@ -108,3 +108,31 @@ unused, 102 of them in the test flow, breaking the invariant from the
 other direction. The lesson the design now follows: the asymmetry lives
 in how often each side serves, not in missing executions, so the fix
 belongs in the replay rule, not in the log.
+
+## Amendment after critic review (Nov 3, 2026, third commit)
+
+Grok's critic review of this PR, verified firsthand by Muse, adds three
+things. First, the rerun comparison now covers replay_grades.tsv: it
+differs in two rows, an extra row from the phase 2 watchdog kill window
+(r2_replay_66a563d3, the same pattern as the extra cycle1.tsv row) and
+one row (r1_replay_b5ffc38b) where the rerun serves a malformed judge
+reply the live run did not use for that cell; both rows are disclosed in
+the record. Second, the fallback now counts and prints its serves
+("fallback serves: N" at every keyless phase finish; 42 in phase 1 and
+3 in phase 2 on the counted run's log), so the fallback can never cover
+a gap quietly. Third, two corrections to the handover record: the tests
+first commit fails two tests, not one (the shipped tests pass a
+constructor argument that does not exist yet on that commit), and the
+checker seam reuses the first matching line while the model fallback
+uses the most recent; the asymmetry is principled, because a checker
+line is revalidated in full before reuse and a model reply cannot be.
+
+The alternative rule Grok proposed, serving the earliest line, was
+built and tested against the counted run's log: it makes decisions.tsv
+itself differ, a strictly worse outcome, so the most recent rule
+stands. The honest limit, stated for the record: where an interrupted
+log holds duplicate executions of one call with different replies
+(judge drift, a malformed attempt, a crash redo), no replay rule can
+reassign every detail row exactly as the live run happened to consume
+them. What reproduces byte for byte is the run's verdict layer:
+decisions, metrics, summary, planted earned, candidates, contexts.
