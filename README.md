@@ -33,7 +33,7 @@ criteria):
 Paired bootstrap 95% CIs on the earned arm's advantage exclude zero
 against every arm (free +0.104 [+0.021, +0.229], no memory +0.188
 [+0.146, +0.229], raw traces +0.188 [+0.125, +0.271], over 6 paired
-task and repetition cells). The planted poison run earned nothing.
+task and repetition cells). No answer in any arm passed a full rubric; the criterion pass rate is the pre-registered discriminating metric. The planted poison run earned nothing.
 The full record, including every failure and interruption the run
 survived, is in runs/pyx_h9_20261102b/RESULTS.md, and the whole run
 reruns keyless from its own call log (see Quickstart).
@@ -72,8 +72,8 @@ Every model called at runtime is a Meta model, fallbacks included.
 
 Judge B runs on Baseten's meta-models/muse-spark-open-1026 endpoint:
 Muse Spark Open, Meta's open weight model, is the second judge, and
-it is load bearing. No lesson is earned unless the open weight judge
-also passes it, and the counted run's verdicts were produced with it.
+it is load bearing. A criterion fails only when both judges agree it fails, so every failure verdict in the counted run, and every
+rejection that followed from one, required Judge B's vote. No verdict in the run exists without it.
 
 ## Quickstart
 

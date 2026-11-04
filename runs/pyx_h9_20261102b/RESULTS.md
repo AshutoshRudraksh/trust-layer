@@ -48,9 +48,8 @@ transcribe cell values; define what auxiliary diagnostic columns
 measure and summarize the authors' textual explanation of causes,
 trends, and implications." Three candidates were rejected as
 REGRESSION (each broke T2.C2 in replay) and seven as NO_FIX. With one
-admissible lesson no pair exists under A8; pairs.txt records "none",
-a call the external pair naming expert and Muse reached
-independently. Ashutosh approved the lesson's exact text on Nov 3,
+admissible lesson no pair exists under A8; pairs.txt records "none".
+Ashutosh approved the lesson's exact text on Nov 3,
 2026; the approval custody is disclosed below. Phase 2 then ran cycle
 1 with the same earned set in all three repetitions (A7).
 
