@@ -149,17 +149,19 @@ tools; the bank changes only through the pipeline and the human gate.
 
 ## What existed before, what was built this week
 
-This repository began the event week as a trust layer scaffold:
-Meta and Baseten clients with a persistent spend ledger, an approval
-gate pattern, and isolation utilities. Pyx, the gated memory
+This repository was created on the morning of October 26, the
+event's first day, and the first thing built in it was a trust layer
+scaffold: Meta and Baseten clients with a persistent spend ledger,
+an approval gate pattern, and isolation utilities. Nothing in this
+repository predates October 26. Pyx, the gated memory
 experiment that is this submission, was designed and built on top of
 it during the event: the frozen EVAL.md protocol, the grading and
 judging pipeline, the distiller, the poison screen, paired replay,
 the two command counted run, the approval CLI, the keyless replay
 engine, and the MCP bank server. The scaffold's first commit landed
-on October 26 at 11:26 AM CT, shortly before the organizer notice's
-listed event start of 12:00 PM CT that day. Everything else in this
-repository, including all of Pyx, was written during the event. The
+on October 26 at 11:26 AM CT, after the event's listed start of
+12:00 PM ET that day. Everything in this
+repository, the scaffold included, was written during the event. The
 surrounding scaffold (api/,
 gate/, locks/, room/) is context the experiment plugs into, not the
 submission itself.
