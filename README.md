@@ -141,9 +141,11 @@ experiment that is this submission, was designed and built on top of
 it during the event: the frozen EVAL.md protocol, the grading and
 judging pipeline, the distiller, the poison screen, paired replay,
 the two command counted run, the approval CLI, the keyless replay
-engine, and the MCP bank server. Both the scaffold and Pyx were
-written in this repository during the event period; no code in this
-repository predates the event. The surrounding scaffold (api/,
+engine, and the MCP bank server. The scaffold's first commit landed
+on October 26 at 11:26 AM CT, shortly before the organizer notice's
+listed event start of 12:00 PM CT that day. Everything else in this
+repository, including all of Pyx, was written during the event. The
+surrounding scaffold (api/,
 gate/, locks/, room/) is context the experiment plugs into, not the
 submission itself.
 
