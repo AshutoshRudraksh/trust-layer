@@ -49,7 +49,7 @@ class LogFirst:
 
     def __init__(self, lines: List[Dict[str, Any]], live: Any, log: CallLog, judge: str, model: str,
                  endpoint: str, kind: str) -> None:
-        self.replay = ReplayClient(lines, judge=judge, kind=kind)
+        self.replay = ReplayClient(lines, judge=judge, kind=kind, fallback=live is None)
         self.live = live and RecordingClient(live, log, judge=judge, model=model, endpoint=endpoint, kind=kind)
 
     def _serve(self, method: str, prompt: str, params: Dict[str, Any]) -> Any:
@@ -118,9 +118,18 @@ class Engine:
                 _check_against_log(task_id, text, line)
                 break
         else:
+            reused = None
             if self.keyless:
+                reused = next((j for j, l in enumerate(self.checks)
+                               if l["task_id"] == task_id and l["answer_sha256"] == sha), None)
+            if reused is not None:
+                self.used.add(reused)
+                self.checker_fallbacks = getattr(self, "checker_fallbacks", 0) + 1
+                _check_against_log(task_id, text, self.checks[reused])
+            elif self.keyless:
                 raise ReplayMissError(f"no unused checker line for {task_id} {sha[:12]}")
-            self.log.append_checker(task_id, text, rubric, check_answer(text, rubric))
+            else:
+                self.log.append_checker(task_id, text, rubric, check_answer(text, rubric))
         return grade_answer(text, task_id, self.c["a"], self.c["b"])
 
     def cell(self, task_id: str, copy: str, rid: str, seed: int, ctx: ArmContext, tsv: str) -> Tuple[Any, Any]:
@@ -135,6 +144,9 @@ class Engine:
         if new:
             DecisionLog(self.out / tsv).append(rows_from_grade(report, rid, seed, copy))
         return answers[0], report
+
+    def fallback_serves(self) -> int:
+        return sum(c.replay.fallback_serves for c in self.c.values()) + getattr(self, "checker_fallbacks", 0)
 
     def served(self) -> List[int]:
         seqs = {c.replay._lines[i]["seq"] for c in self.c.values() for i in c.replay._served}
@@ -218,6 +230,7 @@ def _finish(eng: Engine, status: str) -> int:
     print(status)
     if eng.keyless:
         print("served log seqs " + ",".join(map(str, eng.served())))
+        print(f"fallback serves: {eng.fallback_serves()}")
     return 0
 
 
