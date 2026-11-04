@@ -94,7 +94,7 @@ SRC=runs/pyx_h9_20261102b
 SHA=73583998bfccc2dbb3831b5f2425e196a8505fe740bd0dac4e17dcb957c27ddb
 python -m pyx.run phase1 --run-id pyx_h9_20261102b --out /tmp/rerun --eval-sha256 $SHA --reps 3 --keyless --from $SRC
 python -m pyx.run phase1 --run-id pyx_h9_20261102b --out /tmp/rerun --eval-sha256 $SHA --reps 3 --pairs $SRC/pairs.txt --keyless --from $SRC
-grep -P "\tapproval\t" $SRC/decisions.tsv >> /tmp/rerun/decisions.tsv
+awk -F'\t' '$2 == "approval"' $SRC/decisions.tsv >> /tmp/rerun/decisions.tsv
 python -m pyx.run phase2 --run-id pyx_h9_20261102b --out /tmp/rerun --eval-sha256 $SHA --reps 3 --keyless --from $SRC
 diff $SRC/decisions.tsv /tmp/rerun/decisions.tsv
 diff $SRC/metrics.json /tmp/rerun/metrics.json
