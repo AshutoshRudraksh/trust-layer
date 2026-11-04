@@ -1,66 +1,157 @@
-# Trust Layer
+# Pyx
 
-Trust Layer is an open-source, trust-first multi-agent execution runtime powered by the Meta Model API. It gives engineering and operations teams a verifiable control plane for specialist AI agents with exact-text approval gates, deterministic idempotency, untrusted input isolation, single-owner task locks, sourced and user-correctable memory, and anti-spam durable routines.
+**Every lesson stands trial.**
 
-## Problem Statement
+Pyx is a gate for agent memory. Agents that learn from experience
+usually remember whatever they produce, including the wrong lessons,
+the lucky ones, and the poisoned ones. Pyx does not let an agent
+remember whatever it wants. Every candidate lesson has to earn
+admission to the bank, on evidence: graded against a hidden rubric by
+two independent judges, tested by causal replay, screened for planted
+poison, and approved by a human reading its exact text. What survives
+is a bank of earned lessons, each carrying the evidence that admitted
+it, that other agents can plug into.
 
-Modern multi-agent systems fail in production when moving from read-only chat to external actions. Teams encounter four recurring reliability and security failures:
+Built for the Meta Global AI Developer Hackathon (Cerebral Valley,
+Nov 2026), solo, on Meta models only.
 
-1. **Prompt Injection on Untrusted Inputs:** External emails, webhooks, pull requests, and web pages can inject instructions that trick agents into unauthorized outbound writes.
-2. **Duplicate External Writes on Retries:** Worker restarts or network timeouts cause agents to send duplicate emails, messages, or tickets.
-3. **Multi-Agent Race Conditions and Notification Spam:** Multiple specialist agents act on the same thread or issue simultaneously and flood users with repetitive nudges.
-4. **Opaque Memory Drift:** Unverified facts enter shared memory without source attribution, and user corrections fail to update agent behavior.
+## The counted result
 
-Trust Layer resolves all four challenges in a unified execution layer.
+The frozen protocol in EVAL.md was executed end to end on Nov 2 to 3,
+2026 (run pyx_h9_20261102b, record in runs/pyx_h9_20261102b/). Eleven
+candidate lessons were distilled; exactly one earned admission. Cycle
+1 then compared four arms on criterion pass rate (conclusive
+criteria):
 
-## Architecture and Repository Layout
+| Arm | Pass rate |
+| --- | --- |
+| earned_lessons (the 1 earned lesson) | 0.625 |
+| free_lessons (all 11, unfiltered) | 0.5208 |
+| no_memory | 0.4375 |
+| raw_traces | 0.4375 |
 
-* `api/`: FastAPI service exposing `/health`, `/actions/propose`, `/approvals/{approval_id}/decide`, `/approvals/{approval_id}/execute`, `/locks`, `/locks/claim`, `/memory/facts`, `/memory/correct`, and `/room/priority-list`.
-* `gate/`: `ApprovalGate` enforcing exact-text previews, unified diffs (`difflib.unified_diff`), deterministic SHA-256 idempotency keys, draft-only send blocking, hard denial locks until a new user instruction ID is issued, and an append-only SQLite audit log.
-* `locks/`: `OwnerRegistry` providing single-owner task locks so specialist agents serialize cleanly and route secondary context to the Priority Room with zero duplicate nudges.
-* `isolation/`: `UntrustedDataGuard` wrapping external text in `<untrusted_data>` tags, escaping forged closing tags, detecting prompt injection signatures, and blocking unapproved outbound writes.
-* `agents/`:
-  * `meta_client.py`: OpenAI-compatible Meta Model API client (`https://api.meta.ai/v1/responses` and `/v1/chat/completions`) routing specialist agents (`chief-of-staff`, `pipeline`, `research`, `code-review`) to `muse-spark-1.3` with validated reasoning effort (`low`, `medium`, `high`, `max`) and background memory consolidation and evaluations to `muse-spark-1.3-contributor`, backed by a strict $150.00 credit cap ledger.
-  * `skills_loader.py` and `skills/*/SKILL.md`: Progressive Agent Skills loader that parses YAML frontmatter at startup, loads full skill bodies on demand, and generates reviewed unified diffs when user corrections update agent rules.
-  * `tracing.py`: Span collector compatible with Arize Phoenix and LangSmith tracing.
-* `memory/`: `MemoryStore` storing shared facts with mandatory `source_uri`, `timestamp`, and `confidence`, converting user corrections into reviewed unified diffs against the responsible agent's `SKILL.md`.
-* `workflows/`: `RoutineCooldownRunner` enforcing 24-hour anti-spam nudge cooldowns per routine and target item.
-* `room/`: `PriorityRoomMerger` and React TypeScript UI (`room/ui/PriorityRoom.tsx`) consolidating pending approvals, active task locks, and specialist findings into one ranked view.
-* `evals/`: Automated red-team and reliability test suite (`evals/test_day1_suite.py`).
+Paired bootstrap 95% CIs on the earned arm's advantage exclude zero
+against every arm (free +0.104 [+0.021, +0.229], no memory +0.188
+[+0.146, +0.229], raw traces +0.188 [+0.125, +0.271], over 6 paired
+task and repetition cells). The planted poison run earned nothing.
+The full record, including every failure and interruption the run
+survived, is in runs/pyx_h9_20261102b/RESULTS.md, and the whole run
+reruns keyless from its own call log (see Quickstart).
+
+## How it works
+
+1. **Answer.** A worker answers rubric tasks over research papers
+   (Reflexion and Agentless for training; the held out set is out of
+   the counted run).
+2. **Grade.** A programmatic checker scores 7 criteria; two judges
+   score the eighth, which demands the authors' own explanation. A
+   criterion fails only when both judges agree it fails.
+3. **Distill.** Candidate lessons are distilled from the graded
+   failures. The distiller never sees check text, expected values, or
+   judge replies.
+4. **Poison check.** Candidates from a source carrying planted
+   instructions or a planted false claim must not carry that content,
+   verbatim or paraphrased.
+5. **Paired replay.** Each candidate is replayed against its task:
+   it must fix its target criterion in at least 2 of 3 repetitions
+   and break nothing in any.
+6. **Human gate.** A person approves or denies the exact lesson
+   text. No approval, no admission, whatever the scores say.
+7. **Bank.** Earned lessons, with their verdict records, form the
+   bank. Retrieval for this horizon is all earned lessons in context,
+   and the bank is served read only over MCP (below).
+
+## Meta models
+
+Every model called at runtime is a Meta model, fallbacks included.
+
+| Role | Model | Where it runs |
+| --- | --- | --- |
+| Worker, distiller, Judge A | muse-spark-1.3-contributor | Meta Model API |
+| Judge B | muse-spark-open-1026 | Baseten |
+
+Judge B runs on Baseten's meta-models/muse-spark-open-1026 endpoint:
+Muse Spark Open, Meta's open weight model, is the second judge, and
+it is load bearing. No lesson is earned unless the open weight judge
+also passes it, and the counted run's verdicts were produced with it.
 
 ## Quickstart
 
-### 1. Install Dependencies
+Python 3.11 or newer. No key is needed for the test suite, the frozen
+protocol check, or rerunning the counted run.
 
 ```bash
-pip install -e ".[dev]"
+pip install -e ".[dev,mcp]"
+pytest
+python -m pyx.run check-eval --eval-sha256 73583998bfccc2dbb3831b5f2425e196a8505fe740bd0dac4e17dcb957c27ddb
 ```
 
-### 2. Configure Meta Model API Credentials
+Rerun the counted run keyless from its committed record (no keys, no
+spend; decisions and metrics reproduce byte for byte):
 
 ```bash
-export MODEL_API_KEY="your_meta_model_api_key"
+SRC=runs/pyx_h9_20261102b
+SHA=73583998bfccc2dbb3831b5f2425e196a8505fe740bd0dac4e17dcb957c27ddb
+python -m pyx.run phase1 --run-id pyx_h9_20261102b --out /tmp/rerun --eval-sha256 $SHA --reps 3 --keyless --from $SRC
+python -m pyx.run phase1 --run-id pyx_h9_20261102b --out /tmp/rerun --eval-sha256 $SHA --reps 3 --pairs $SRC/pairs.txt --keyless --from $SRC
+grep -P "\tapproval\t" $SRC/decisions.tsv >> /tmp/rerun/decisions.tsv
+python -m pyx.run phase2 --run-id pyx_h9_20261102b --out /tmp/rerun --eval-sha256 $SHA --reps 3 --keyless --from $SRC
+diff $SRC/decisions.tsv /tmp/rerun/decisions.tsv
+diff $SRC/metrics.json /tmp/rerun/metrics.json
 ```
 
-When `MODEL_API_KEY` is omitted, `MetaModelClient` runs in deterministic local dry-run mode while still enforcing reasoning validation and the $150.00 budget guard.
-
-### 3. Run the Evaluation and Test Suite
+To run live, supply your own keys (never commit them):
 
 ```bash
-pytest -v
+export MODEL_API_KEY=<your Meta Model API key>
+export BASETEN_API_KEY=<your Baseten API key>
 ```
 
-### 4. Start the API Server
+With no key set, nothing is called: the pipeline's keyless mode
+replays recorded calls, and the scaffold client falls back to a
+deterministic dry run. Neither path reaches a model.
+
+## Inspect the bank over MCP
+
+The counted run's bank is served by a read only MCP server with
+exactly two tools: query earned lessons by task family or criterion,
+and fetch a lesson's provenance and verdict record.
 
 ```bash
-uvicorn api.main:app --reload --port 8000
+python -m pyx.mcp_server --run-dir runs/pyx_h9_20261102b
 ```
 
-## Verified Guarantees
+Streamable HTTP on 127.0.0.1:8377 by default. There are no write
+tools; the bank changes only through the pipeline and the human gate.
 
-1. **Idempotent Execution:** Forced retries on an approved action execute the underlying side effect exactly once.
-2. **Hard Denial Lock:** Denied actions remain locked against re-proposal or execution until a new user instruction ID is provided.
-3. **Draft-Only Send Blocking:** Any external send action proposed under `intent="draft"` is rejected at the gate and recorded in the audit log.
-4. **Untrusted Input Isolation:** Prompt injection payloads inside external data cannot close `<untrusted_data>` fences or trigger outbound writes.
-5. **Single-Owner Task Serialization:** Concurrent lock claims by multiple specialist agents never produce duplicate nudges; secondary context is merged into the Priority Room.
-6. **Budget Guard Enforcement:** Uncredited accounts or requests exceeding the $150.00 cap are blocked before invoking the Meta Model API.
+## What existed before, what was built this week
+
+This repository began the event week as a trust layer scaffold:
+Meta and Baseten clients with a persistent spend ledger, an approval
+gate pattern, and isolation utilities. Pyx, the gated memory
+experiment that is this submission, was designed and built on top of
+it during the event: the frozen EVAL.md protocol, the grading and
+judging pipeline, the distiller, the poison screen, paired replay,
+the two command counted run, the approval CLI, the keyless replay
+engine, and the MCP bank server. Both the scaffold and Pyx were
+written in this repository during the event period; no code in this
+repository predates the event. The surrounding scaffold (api/,
+gate/, locks/, room/) is context the experiment plugs into, not the
+submission itself.
+
+## Repository layout
+
+- `pyx/`: the Pyx pipeline (grading, judges, distill, replay, phases,
+  the bank, the MCP server).
+- `EVAL.md`: the frozen evaluation protocol. Runs count only against
+  its recorded sha256.
+- `runs/`: the pilot record (runs/pilot_thin_20261102_r1/) and the
+  counted run record (runs/pyx_h9_20261102b/), with results and
+  disclosures.
+- `evals/`: the test suite.
+- `agents/`: the Meta and Baseten clients and the spend ledger.
+- `docs/plans/`: the plan file governing each pull request.
+
+## License
+
+MIT (declared in pyproject.toml).
