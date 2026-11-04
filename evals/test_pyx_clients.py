@@ -408,3 +408,78 @@ def test_meta_empty_final_text_raises_after_recording_spend(tmp_path: Path) -> N
     with pytest.raises(EmptyReplyError, match="max_output_tokens"):
         client.respond(prompt="x", role="eval-runner", reasoning_effort="low", max_output_tokens=512)
     assert SpendLedger(ledger_path).total_usd("meta") > 0
+
+
+def test_backoff_attempt_deadline_retries_a_hanging_attempt_then_succeeds() -> None:
+    import time as _time
+
+    seen: List[httpx.Request] = []
+    sleeps: List[float] = []
+    attempts = {"n": 0}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        attempts["n"] += 1
+        if attempts["n"] == 1:
+            _time.sleep(2.0)
+        return _chat_ok()
+
+    transport = _transport(handler, seen)
+    started = _time.monotonic()
+    with httpx.Client(transport=transport) as client:
+        resp = post_with_backoff(
+            client, "https://example.test/x", headers={}, json={}, sleep=sleeps.append, deadline_s=0.2
+        )
+    elapsed = _time.monotonic() - started
+    assert resp.status_code == 200
+    assert attempts["n"] == 2
+    assert sleeps == [1.0]
+    assert elapsed < 1.5
+
+
+def test_backoff_attempt_deadline_exhausts_schedule_and_raises_named_error() -> None:
+    import time as _time
+
+    seen: List[httpx.Request] = []
+    sleeps: List[float] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        _time.sleep(2.0)
+        return _chat_ok()
+
+    transport = _transport(handler, seen)
+    with httpx.Client(transport=transport) as client:
+        with pytest.raises(TransportFailedError) as excinfo:
+            post_with_backoff(
+                client,
+                "https://example.test/x",
+                headers={"Authorization": "Bearer SECRET"},
+                json={},
+                sleep=sleeps.append,
+                deadline_s=0.2,
+            )
+    assert len(seen) == 4
+    assert sleeps == [1.0, 2.0, 4.0]
+    message = str(excinfo.value)
+    assert "https://example.test/x" in message
+    assert "AttemptDeadlineError" in message
+    assert "SECRET" not in message
+
+
+def test_backoff_attempt_inside_the_deadline_is_untouched() -> None:
+    import time as _time
+
+    seen: List[httpx.Request] = []
+    sleeps: List[float] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        _time.sleep(0.05)
+        return _chat_ok()
+
+    transport = _transport(handler, seen)
+    with httpx.Client(transport=transport) as client:
+        resp = post_with_backoff(
+            client, "https://example.test/x", headers={}, json={}, sleep=sleeps.append, deadline_s=5.0
+        )
+    assert resp.status_code == 200
+    assert len(seen) == 1
+    assert sleeps == []
