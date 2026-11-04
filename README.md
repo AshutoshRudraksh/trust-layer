@@ -19,16 +19,16 @@ Nov 2026), solo, on Meta models only.
 
 - **Lesson**: a short note an agent writes after failing a graded
   question, stating what it learned. A lesson is a candidate, not
-    knowledge.
-  - **Trial**: the four stage check every candidate lesson must pass
-    before it can be remembered: two judge grading, a poison screen,
-      causal replay, and human approval of its exact text.
-    - **Earned lesson**: a lesson that passed the full trial and entered
-      the bank.
-      - **Bank**: the set of earned lessons, each carrying the evidence that
-        admitted it, served read only over MCP.
-        - **Arm**: one memory condition in the counted comparison (no memory,
-          raw traces, free lessons, earned lessons).
+  knowledge.
+- **Trial**: the four stage check every candidate lesson must pass
+  before it can be remembered: two judge grading, a poison screen,
+  causal replay, and human approval of its exact text.
+- **Earned lesson**: a lesson that passed the full trial and entered
+  the bank.
+- **Bank**: the set of earned lessons, each carrying the evidence that
+  admitted it, served read only over MCP.
+- **Arm**: one memory condition in the counted comparison (no memory,
+  raw traces, free lessons, earned lessons).
 
 ## The counted result
 
