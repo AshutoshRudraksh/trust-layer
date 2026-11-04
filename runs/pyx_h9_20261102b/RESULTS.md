@@ -72,8 +72,10 @@ Judge A is muse-spark-1.3-contributor (Meta API), Judge B is
 muse-spark-open-1026 on Baseten; a criterion fails only when both
 agree. Cycle 0 self agreement: A 1.0, B 0.6667 overall and 0.0 on T2,
 with a cycle 0 T2 disagreement rate of 0.3333: Judge B flipped on T2
-across repetitions. Cycle 1 self agreement is 1.0 everywhere except
-the free lessons arm at 0.75 for both judges. These are
+across repetitions. Cycle 1 self agreement is 1.0 for both judges on the earned and no
+memory arms. On the free lessons arm both judges sit at 0.75 (0.5 on
+T2). On raw traces Judge A stays at 1.0 while Judge B sits at 0.75
+(0.5 on T2). These are
 pre-registered metrics, reported as measured, not repaired.
 
 ## Spend
@@ -102,7 +104,7 @@ Phase 2's watchdog restart came about 20 minutes after its stall, not
 would also suspend the watchdog's clock. The crashed first attempt's
 own record (answers.jsonl, budget_start.json, calls.jsonl; zip sha256
 7ce5987cd4d4a8fae246e7ee4df728ab2c2cc08a5fb74d34a790211cd0271b47)
-is added by a follow-up commit when the transfer lands.
+is committed beside this directory at runs/pyx_h9_20261102/.
 
 Approval custody. The approval decision was made by Ashutosh in chat
 on Nov 3, 2026 at 4:21 PM CT and transcribed by Grok through the
@@ -117,8 +119,9 @@ replay fallback for interrupted logs. decisions.tsv, metrics.json,
 summary.md, planted_earned.md, candidates_r0.jsonl, and contexts.tsv
 reproduce byte for byte. The fallback served 45 recorded replies
 across the rerun (42 in phase 1, 0 in the pairs pass, 3 in phase 2),
-each counted and printed. Three detail files differ in single rows,
-all from the run's interruptions and none touching a verdict:
+each counted and printed. Three detail files differ, replay_grades.tsv
+in two rows and the other two in one row each, all from the run's
+interruptions and none changing an aggregate decision or metric:
 replay_reps.tsv (the rep 1 row for L_T1.C4_f8095214 reads REGRESSION
 in the record and NO_FIX in the rerun), replay_grades.tsv (an extra
 rerun row, r2_replay_66a563d3, from the phase 2 watchdog kill window,
@@ -134,5 +137,6 @@ as the live run consumed them. The verdict layer is what reproduces.
 H9g record notes. Under the per attempt deadline, a timed out
 attempt's thread is never actually stopped (the documented daemon
 thread trade), and spend can be undercounted when an abandoned
-request still finishes and is billed. Both are carried from PR #45's
-review.
+request still finishes and is billed, and the behavior of
+client.close() with abandoned attempts is unchecked. All three are
+carried from PR #45's review.
