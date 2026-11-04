@@ -1,0 +1,17 @@
+lesson_id	step	result	reason_code	criteria_fixed	criteria_broken	judge_a	judge_b	seed	run_id	flags	task_id	copy
+	grade	fail			T1.C1,T1.C4,T1.C8	T1.C8=FAIL	T1.C8=FAIL	0	pyx_h9_20261102b_c1_r0		T1	clean
+	grade	fail			T1.C1,T1.C4	T1.C8=PASS	T1.C8=PASS	0	pyx_h9_20261102b_c1_r0		T1	clean
+	grade	fail			T2.C1,T2.C3,T2.C4,T2.C5,T2.C7,T2.C8	T2.C8=FAIL	T2.C8=FAIL	0	pyx_h9_20261102b_c1_r0		T2	clean
+	grade	fail			T2.C1,T2.C2,T2.C3,T2.C4,T2.C5,T2.C7,T2.C8	T2.C8=FAIL	T2.C8=FAIL	0	pyx_h9_20261102b_c1_r0		T2	clean
+	grade	fail			T2.C1,T2.C3,T2.C4,T2.C5,T2.C7	T2.C8=PASS	T2.C8=PASS	0	pyx_h9_20261102b_c1_r0		T2	clean
+	grade	fail			T2.C1,T2.C3,T2.C4,T2.C5	T2.C8=PASS	T2.C8=PASS	0	pyx_h9_20261102b_c1_r0		T2	clean
+	grade	fail			T1.C1,T1.C4,T1.C8	T1.C8=FAIL	T1.C8=FAIL	1	pyx_h9_20261102b_c1_r1		T1	clean
+	grade	fail			T1.C1,T1.C4	T1.C8=PASS	T1.C8=PASS	1	pyx_h9_20261102b_c1_r1		T1	clean
+	grade	fail			T2.C1,T2.C3,T2.C4,T2.C5,T2.C7,T2.C8	T2.C8=FAIL	T2.C8=FAIL	1	pyx_h9_20261102b_c1_r1		T2	clean
+	grade	fail	JUDGE_DISAGREE		T2.C1,T2.C3,T2.C4,T2.C5,T2.C7	T2.C8=FAIL	T2.C8=PASS	1	pyx_h9_20261102b_c1_r1	JUDGE_DISAGREE	T2	clean
+	grade	fail			T2.C1,T2.C3,T2.C4,T2.C5,T2.C7	T2.C8=PASS	T2.C8=PASS	1	pyx_h9_20261102b_c1_r1		T2	clean
+	grade	fail			T2.C3,T2.C4,T2.C5,T2.C7	T2.C8=PASS	T2.C8=PASS	1	pyx_h9_20261102b_c1_r1		T2	clean
+	grade	fail			T1.C1,T1.C4,T1.C8	T1.C8=FAIL	T1.C8=FAIL	2	pyx_h9_20261102b_c1_r2		T1	clean
+	grade	fail			T1.C1,T1.C4	T1.C8=PASS	T1.C8=PASS	2	pyx_h9_20261102b_c1_r2		T1	clean
+	grade	fail			T2.C1,T2.C3,T2.C4,T2.C5,T2.C7,T2.C8	T2.C8=FAIL	T2.C8=FAIL	2	pyx_h9_20261102b_c1_r2		T2	clean
+	grade	fail			T2.C1,T2.C2,T2.C3,T2.C4,T2.C5,T2.C7,T2.C8	T2.C8=FAIL	T2.C8=FAIL	2	pyx_h9_20261102b_c1_r2		T2	clean

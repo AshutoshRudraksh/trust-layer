@@ -1,0 +1,4 @@
+16:22:12 start attempt 1 calls=356 log=/workspace/phase1_pyx_h9_20261102b_p2_wd1.log
+17:02:22 stale 1220s, killing 906303 calls=408
+17:02:25 start attempt 2 calls=408 log=/workspace/phase1_pyx_h9_20261102b_p2_wd2.log
+17:03:25 attempt 2 exited on its own EXIT=0 calls=409
