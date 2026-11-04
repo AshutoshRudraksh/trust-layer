@@ -49,7 +49,7 @@ class LogFirst:
 
     def __init__(self, lines: List[Dict[str, Any]], live: Any, log: CallLog, judge: str, model: str,
                  endpoint: str, kind: str) -> None:
-        self.replay = ReplayClient(lines, judge=judge, kind=kind)
+        self.replay = ReplayClient(lines, judge=judge, kind=kind, fallback=live is None)
         self.live = live and RecordingClient(live, log, judge=judge, model=model, endpoint=endpoint, kind=kind)
 
     def _serve(self, method: str, prompt: str, params: Dict[str, Any]) -> Any:
@@ -118,9 +118,17 @@ class Engine:
                 _check_against_log(task_id, text, line)
                 break
         else:
+            reused = None
             if self.keyless:
+                reused = next((j for j, l in enumerate(self.checks)
+                               if l["task_id"] == task_id and l["answer_sha256"] == sha), None)
+            if reused is not None:
+                self.used.add(reused)
+                _check_against_log(task_id, text, self.checks[reused])
+            elif self.keyless:
                 raise ReplayMissError(f"no unused checker line for {task_id} {sha[:12]}")
-            self.log.append_checker(task_id, text, rubric, check_answer(text, rubric))
+            else:
+                self.log.append_checker(task_id, text, rubric, check_answer(text, rubric))
         return grade_answer(text, task_id, self.c["a"], self.c["b"])
 
     def cell(self, task_id: str, copy: str, rid: str, seed: int, ctx: ArmContext, tsv: str) -> Tuple[Any, Any]:

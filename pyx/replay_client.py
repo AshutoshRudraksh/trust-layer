@@ -35,23 +35,32 @@ class ReplayResponse:
 
 
 class ReplayClient:
-    def __init__(self, lines: List[Dict[str, Any]], judge: str, kind: str = "judge") -> None:
+    def __init__(self, lines: List[Dict[str, Any]], judge: str, kind: str = "judge",
+                 fallback: bool = False) -> None:
         self.judge = judge
+        self.fallback = fallback
         self._lines = [l for l in lines if l.get("kind") == kind and l.get("judge") == judge]
         self.model = self._lines[0]["model"] if self._lines else ""
         self.endpoint = self._lines[0]["endpoint"] if self._lines else ""
         self._served: set = set()
+
+    def _deliver(self, line: Dict[str, Any]) -> ReplayResponse:
+        if line["outcome"] == "error":
+            name, _, message = line["error"].partition(": ")
+            raise _ERRORS.get(name, RuntimeError)(message)
+        return ReplayResponse(line["reply"], line["input_tokens"], line["output_tokens"],
+                              line["cost_usd"], line["model"])
 
     def _serve(self, prompt: str, params: Dict[str, Any]) -> ReplayResponse:
         key = replay_key(self.judge, self.model, self.endpoint, prompt, params)
         for i, line in enumerate(self._lines):
             if i not in self._served and line["key"] == key:
                 self._served.add(i)
-                if line["outcome"] == "error":
-                    name, _, message = line["error"].partition(": ")
-                    raise _ERRORS.get(name, RuntimeError)(message)
-                return ReplayResponse(line["reply"], line["input_tokens"], line["output_tokens"],
-                                      line["cost_usd"], line["model"])
+                return self._deliver(line)
+        if self.fallback:
+            for line in reversed(self._lines):
+                if line["key"] == key:
+                    return self._deliver(line)
         raise ReplayMissError(
             f"no unused log entry for judge {self.judge}, model {self.model}, key {key[:12]}, "
             f"prompt_sha256 {hashlib.sha256(prompt.encode('utf-8')).hexdigest()[:12]}")
