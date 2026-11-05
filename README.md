@@ -1,3 +1,5 @@
+![Pyx: every lesson stands trial](banner.jpg)
+
 # Pyx
 
 **Every lesson stands trial.**
