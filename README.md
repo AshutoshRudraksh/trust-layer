@@ -17,6 +17,8 @@ it, that other agents can plug into.
 Built for the Meta Global AI Developer Hackathon (Cerebral Valley,
 Nov 2026), solo, on Meta models only.
 
+**Demo video:** [I Poisoned My AI's Memory | 11 Lessons Stood Trial, Only 1 Survived](https://www.youtube.com/watch?v=gM4wEFahqPY)
+
 ## Words we use
 
 - **Lesson**: a short note an agent writes after failing a graded
