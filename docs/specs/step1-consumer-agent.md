@@ -72,7 +72,7 @@ Order per [ADR 0005](../adr/0005-hardening-before-consumer.md): hardening first,
 
 1. Close the provenance leak. DONE. Failing test first (evals/test_pyx_mcp_read_path.py), then `LessonBank.provenance` drops `text` for any candidate that is not earned. Verified against runs/pyx_h9_20261102b: all 34 unadmitted candidate ids across the run's candidates files come back without text; the admitted lesson keeps its text.
 2. Settle the open decisions in section 7 and record each as an ADR. DONE: ADRs 0002 to 0006. No code.
-3. Poison screen positive control: a test that the existing screen rejects a known poisoned lesson.
+3. Poison screen positive control: a test that the existing screen rejects a known poisoned lesson. DONE in evals/test_pyx_poison_control.py: a lesson carrying the planted instruction near verbatim is rejected through `run_poison` on the planted copy. Finding: a reworded planted instruction and a reworded planted claim both pass the screen; recorded as strict xfail, matching the limit already stated in docs/plans/pr_f_guard_plan.md. Replay and the human read remain the gates for paraphrase.
 4. One held out transfer task, kept out of the counted run.
 5. Counted ledger in CI: dash check and README suite count.
 6. Chart generated from runs/pyx_h9_20261102b/RESULTS.md, with a consistency test.
