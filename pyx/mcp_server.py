@@ -30,9 +30,10 @@ def build_server(bank: LessonBank):
 
     @server.tool()
     def get_lesson_provenance(lesson_id: str) -> dict:
-        """Fetch one lesson's full record: its text and provenance (distiller,
-        source, sha256, approver) plus every verdict row recorded for it.
-        Works for any candidate in the run, earned or not."""
+        """Fetch one candidate's record: provenance (distiller, source, sha256,
+        approver) plus every verdict row recorded for it. Works for any
+        candidate in the run, but only an earned lesson carries its text; any
+        other candidate is served as its sha256 and verdict rows, no text."""
         return bank.provenance(lesson_id)
 
     return server

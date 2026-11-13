@@ -7,6 +7,10 @@ and provenance come from the run's candidates files, read through the
 existing CandidateStore; verdict rows come from decisions.tsv, read through
 the existing DecisionLog; per repetition replay detail comes from
 replay_reps.tsv when the run recorded it.
+
+Only an earned lesson is served with its text. Every other candidate,
+planted or rejected, is served as its sha256 and verdict rows only, so no
+caller of this view can receive text the human gate never admitted.
 """
 from __future__ import annotations
 
@@ -75,8 +79,11 @@ class LessonBank:
         if candidate is None:
             raise BankError(f"unknown lesson_id {lesson_id!r} in {self.run_dir}")
         view = _lesson_view(candidate)
+        earned = lesson_id in self._earned
+        if not earned:
+            del view["text"]
         view["provenance"] = asdict(candidate.provenance)
-        view["earned"] = lesson_id in self._earned
+        view["earned"] = earned
         view["decisions"] = [asdict(r) for r in self._rows if r.lesson_id == lesson_id]
         view["replay_repetitions"] = [r for r in self._replay_reps if r.get("lesson_id") == lesson_id]
         return view
