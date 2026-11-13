@@ -198,3 +198,49 @@ def test_the_hard_stop_aborts_on_combined_new_spend(tmp_path) -> None:
 def test_default_caps_are_the_approved_ones() -> None:
     from pyx.transfer_run import CAPS, HARD_STOP_USD, REPS
     assert (CAPS, HARD_STOP_USD, REPS) == ({"meta": 3.0, "baseten": 5.0}, 25.0, 5)
+
+
+class DeactivatedClient(FakeClient):
+    """Baseten answering a deactivated deployment: a non retryable HTTP 400, as on Nov 13, 2026."""
+
+    def chat(self, prompt: str, **params) -> SimpleNamespace:
+        import httpx
+        request = httpx.Request("POST", "https://inference.baseten.co/v1/chat/completions")
+        body = '{"error": "Model version wpgy40e is deactivated. It needs to be activated before running predictions"}'
+        response = httpx.Response(400, request=request, text=body)
+        raise httpx.HTTPStatusError("Client error '400 Bad Request'", request=request, response=response)
+
+
+def test_a_non_retryable_provider_http_error_aborts_cleanly(tmp_path) -> None:
+    rubric, sha, paper, ledger, live = _setup(tmp_path)
+    live["b"] = DeactivatedClient(ledger, "baseten")
+    out = tmp_path / "run"
+    with pytest.raises(TransferAbort, match="baseten"):
+        run_transfer(out, rubric, paper, live, ledger, env=KEYS, expected_sha256=sha)
+    abort = (out / "abort.txt").read_text(encoding="utf-8")
+    assert abort.startswith("ABORT: baseten HTTP 400")
+    assert "Model version wpgy40e is deactivated" in abort
+    spend = json.loads((out / "spend.json").read_text())
+    assert spend["meta"]["run_delta"] == pytest.approx(ledger.totals["meta"] - 1.0)
+    assert spend["meta"]["run_delta"] == pytest.approx(spend["meta"]["logged_cost_usd"])
+    assert spend["baseten"]["run_delta"] == 0.0
+    assert not (out / "verdicts.tsv").exists()
+    assert not (out / "rubric.json").exists()
+
+
+def test_the_cli_exits_nonzero_without_a_traceback_on_an_abort(tmp_path, monkeypatch, capsys) -> None:
+    import pyx.transfer_run as tr
+    ledger_file = tmp_path / "ledger.json"
+    ledger_file.write_text('{"version": 1, "providers": {}}', encoding="utf-8")
+    monkeypatch.setenv("PYX_SPEND_LEDGER", str(ledger_file))
+    for name, value in KEYS.items():
+        monkeypatch.setenv(name, value)
+    monkeypatch.setattr(tr, "verify_rubric", lambda path, expected_sha256=None: {})
+
+    def deactivated(*args, **kwargs):
+        raise TransferAbort("baseten HTTP 400: Model version wpgy40e is deactivated")
+
+    monkeypatch.setattr(tr, "run_transfer", deactivated)
+    code = tr.main(["--rubric", "r.json", "--paper", "p.txt", "--out", str(tmp_path / "run")])
+    assert code != 0
+    assert "TransferAbort: baseten HTTP 400" in capsys.readouterr().err
