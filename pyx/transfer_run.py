@@ -384,7 +384,7 @@ def redact_calls(path: Any) -> int:
     prompt_sha256 before anything is written. Returns the number of lines changed; a second pass changes 0."""
     from pyx.call_log import _canonical
     path = Path(path)
-    lines = [json.loads(l) for l in path.read_text(encoding="utf-8").splitlines()]
+    lines = [json.loads(l) for l in path.read_text(encoding="utf-8").split("\n")[:-1]]  # as CallLog.read does
     changed = 0
     for number, line in enumerate(lines, start=1):
         prompt = line.get("prompt")
