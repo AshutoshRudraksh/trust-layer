@@ -17,7 +17,7 @@ from pyx.transfer_run import RefuseToStart, redact_calls, run_transfer
 
 
 def _lines(path):
-    return [json.loads(l) for l in path.read_text(encoding="utf-8").splitlines()]
+    return [json.loads(l) for l in path.read_text(encoding="utf-8").split("\n")[:-1]]
 
 
 def test_every_logged_call_of_a_live_run_is_hash_only(tmp_path) -> None:
@@ -43,7 +43,7 @@ def _unredacted_log(tmp_path):
     for line in _lines(calls):
         if line["kind"] == "worker":
             line.update(prompt=next(prompts), held_out=False)
-        rows.append(json.dumps(line, sort_keys=True, separators=(",", ":")) + "\n")
+        rows.append(json.dumps(line, sort_keys=True, separators=(",", ":"), ensure_ascii=False) + "\n")
     calls.write_text("".join(rows), encoding="utf-8")
     assert PAPER in calls.read_text(encoding="utf-8")
     return rubric, sha, paper, out
@@ -81,3 +81,16 @@ def test_redact_calls_refuses_a_prompt_that_does_not_match_its_hash(tmp_path) ->
     with pytest.raises(RefuseToStart, match="prompt_sha256"):
         redact_calls(calls)
     assert calls.read_bytes() == tampered != original
+
+
+def test_redact_calls_survives_page_breaks_and_unicode_line_separators_in_the_paper(tmp_path) -> None:
+    """The real H2 log holds raw U+2028 from the paper text; str.splitlines would cut a JSON line there."""
+    import evals.test_pyx_transfer_run as base
+    original = base.PAPER
+    base.PAPER = original + "\x0cpage two\u2028line two\x85end"
+    try:
+        _, _, _, out = _unredacted_log(tmp_path)
+    finally:
+        base.PAPER = original
+    assert redact_calls(out / "calls.jsonl") == 10
+    assert "page two" not in (out / "calls.jsonl").read_text(encoding="utf-8")
