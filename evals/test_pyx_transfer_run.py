@@ -19,7 +19,8 @@ from pyx.transfer_run import (FallbackRefused, NoFallback, RefuseToStart, Transf
                               earned_context, require_live_keys, run_transfer, verify_rubric)
 
 ROOT = Path(__file__).resolve().parent.parent
-APPROVED_SHA = "2e7de886b5bfd18c42a4d8563c8d39ddd7c4944c63478a3e19c4e0dcbd75a143"
+# Muse ruling, Nov 13, 2026: the JSON freeze supersedes the Markdown freeze 2e7de886... for format only.
+APPROVED_SHA = "3aec5d322432266a9010c7ce55b7c85c9498162a3b40b85684ca3f1bc5d48754"
 KEYS = {"MODEL_API_KEY": "test-meta", "BASETEN_API_KEY": "test-baseten"}
 PAPER = "SWE-agent stand in text for tests. Table 1 reports 12.47 percent resolved."
 

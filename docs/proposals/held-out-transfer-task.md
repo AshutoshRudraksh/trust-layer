@@ -112,7 +112,7 @@ Either way the report states plainly: one task, one lesson, 5 repetitions, and t
 2. Repetitions: 5 paired repetitions.
 3. Caps: abort when new Meta spend passes $3 or new Baseten spend passes $5; hard stop at $25 total; all inside a $40 combined envelope for tonight. Enforced in code by pyx/transfer_run.py.
 4. Judge B stays muse-spark-open-1026 on Baseten, the same host as the counted run.
-5. Rubric: authored and frozen by Muse outside the repo, given to the grader and the checker only, never to the worker or the distiller, published into the run directory after the run. Frozen sha256: 2e7de886b5bfd18c42a4d8563c8d39ddd7c4944c63478a3e19c4e0dcbd75a143.
+5. Rubric: authored and frozen by Muse outside the repo, given to the grader and the checker only, never to the worker or the distiller, published into the run directory after the run. Frozen sha256: 3aec5d322432266a9010c7ce55b7c85c9498162a3b40b85684ca3f1bc5d48754, the JSON freeze (heldout-rubric-frozen.json, kept outside the repo). It supersedes the Markdown freeze 2e7de886b5bfd18c42a4d8563c8d39ddd7c4944c63478a3e19c4e0dcbd75a143 for format only: Markdown to JSON, values unchanged (Muse ruling, Nov 13, 2026). The hash was changed before any model call. The Markdown freeze also goes into the run directory after the run; it is pending from Muse.
 6. Freeze rulings: table numbering follows arXiv v3, so the ablation criteria H2.C3, H2.C4, and H2.C5 source Table 3; H2.C1 is scoped to the full SWE-bench split; H2.C6 counts the 9 labels inside the figure's boxes.
 
 ## 10. Questions as asked before the rulings
