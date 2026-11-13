@@ -70,9 +70,11 @@ def manifest_row(task_id: str) -> Dict[str, str]:
     raise KeyError(f"task {task_id!r} is not in the manifest")
 
 
-def build_worker_prompt(task_id: str, copy: str, context: str = "") -> str:
+def build_worker_prompt(task_id: str, copy: str, context: str = "", text: Optional[str] = None) -> str:
+    """text: the paper text when it is not stored in the repo (held out papers); otherwise read by copy."""
     row = manifest_row(task_id)
-    text = paper_text(row["arxiv"], copy)
+    if text is None:
+        text = paper_text(row["arxiv"], copy)
     wrapped = UntrustedDataGuard().wrap(text, source=f"pyx/tasks/{task_id}.{copy}").wrapped_text
     section = f"{context}\n" if context else ""
     return (
