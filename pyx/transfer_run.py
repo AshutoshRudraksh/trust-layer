@@ -400,6 +400,27 @@ def redact_calls(path: Any) -> int:
     return changed
 
 
+def hash_worker_replies(src: Any, dst: Any) -> int:
+    """Write a copy of call log src to dst with every worker reply replaced by reply_sha256 (option A-strict:
+    the published log carries no raw worker answer). Judge lines and all other fields are unchanged; src is
+    never modified. Returns the number of worker replies hashed; an already hashed log gives 0."""
+    from pyx.call_log import _canonical
+    src, dst = Path(src), Path(dst)
+    if src.resolve() == dst.resolve():
+        raise RefuseToStart(f"{src}: refusing to overwrite the source log; keep the full log and write a copy")
+    lines = [json.loads(l) for l in src.read_text(encoding="utf-8").split("\n")[:-1]]
+    hashed = 0
+    for line in lines:
+        if line.get("kind") == "worker" and line.get("reply") is not None:
+            line["reply_sha256"] = _sha256_bytes(line["reply"].encode("utf-8"))
+            line["reply"] = None
+            hashed += 1
+    tmp = dst.with_name(dst.name + ".tmp")
+    tmp.write_text("".join(_canonical(l) + "\n" for l in lines), encoding="utf-8")
+    os.replace(tmp, dst)
+    return hashed
+
+
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(prog="python -m pyx.transfer_run", description=__doc__.split("\n")[0])
     parser.add_argument("--rubric", required=True, help="path to the frozen H2 rubric JSON (kept out of the repo)")
