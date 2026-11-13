@@ -14,7 +14,8 @@ Refusals come in a fixed order, before any file is written or any call is made:
 Spend: budget_start.json holds each provider's shared ledger total at start; spend.json is rewritten
 after every call with the new spend per provider (ledger delta for a live run, the logged cost for a
 keyless replay). A call that takes new Meta spend past CAPS["meta"], new Baseten spend past
-CAPS["baseten"], or the two together past HARD_STOP_USD aborts the run with abort.txt. The check runs
+CAPS["baseten"], or the two together past HARD_STOP_USD aborts the run with abort.txt, and so does a
+non retryable provider HTTP error (provider, status and message in abort.txt). The check runs
 after each call, so the overshoot is at most one call's cost. The $40 combined envelope covers spend
 from earlier runs tonight too, which this script cannot see; the operator checks it from the shared
 ledger before starting.
@@ -178,15 +179,22 @@ class Metered:
     def __getattr__(self, name: str) -> Any:
         return getattr(self._inner, name)
 
-    def respond(self, prompt: str, **kwargs: Any) -> Any:
-        resp = self._inner.respond(prompt, **kwargs)
+    def _call(self, method: str, prompt: str, **kwargs: Any) -> Any:
+        import httpx
+        try:
+            resp = getattr(self._inner, method)(prompt, **kwargs)
+        except httpx.HTTPStatusError as exc:  # non retryable (for example 400 deactivated); 429 is retried below us
+            self._spend.write()
+            message = " ".join(exc.response.text.split())[:500]
+            self._spend._abort(f"{self._provider} HTTP {exc.response.status_code}: {message}")
         self._spend.after_call(self._provider, resp.cost_usd)
         return resp
 
+    def respond(self, prompt: str, **kwargs: Any) -> Any:
+        return self._call("respond", prompt, **kwargs)
+
     def chat(self, prompt: str, **kwargs: Any) -> Any:
-        resp = self._inner.chat(prompt, **kwargs)
-        self._spend.after_call(self._provider, resp.cost_usd)
-        return resp
+        return self._call("chat", prompt, **kwargs)
 
 
 # role: (log judge name, model, endpoint, log kind, provider)
