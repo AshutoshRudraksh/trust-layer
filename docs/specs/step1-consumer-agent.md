@@ -48,7 +48,7 @@ get_lesson_provenance(lesson_id: str) -> ProvenanceRecord
 
 `ProvenanceRecord`: the LessonView fields plus provenance, earned, decisions, replay_repetitions. Invariant after ticket 1: `text` is present if and only if `earned` is true. For any other candidate the record carries `text_sha256`, `earned: false`, and its verdict rows, never its text. An unknown id stays an error.
 
-### 5.2 Consumer agent (ticket 3 onward; package location is open decision 2)
+### 5.2 Consumer agent (ticket 8 onward; separate `pyx_consumer/` package, ADR 0003)
 
 ```
 fetch_earned(server_url: str, task_id: str) -> list[LessonView]
@@ -58,7 +58,7 @@ answer(task_id: str, context: ConsumerContext, client) -> ConsumerAnswer
 
 `ConsumerContext` holds the lesson texts in the same layout the earned arm uses (spec Amendment 4) and the list of (lesson_id, text_sha256) it was built from. `fetch_earned` refuses any entry whose text does not hash to its `text_sha256`. `ConsumerAnswer` records the answer, the run id, and the used (lesson_id, text_sha256) pairs, so every use is traceable to the exact admitted text.
 
-### 5.3 Gated write back (ticket 5)
+### 5.3 Gated write back (ticket 10; MCP write tool per ADR 0006)
 
 ```
 stage_candidate(answer: ConsumerAnswer, text: str, fixes_criterion_id: str) -> Candidate
@@ -68,17 +68,26 @@ The staged candidate is written through the existing `CandidateStore` into the c
 
 ## 6. Tickets (session sized, one PR each, each finished and verified before the next)
 
-1. Close the provenance leak. DONE in this PR. Failing test first (evals/test_pyx_mcp_read_path.py), then `LessonBank.provenance` drops `text` for any candidate that is not earned. Verified against runs/pyx_h9_20261102b: all 34 unadmitted candidate ids across the run's candidates files come back without text; the admitted lesson keeps its text.
-2. Settle the open decisions below with Ashutosh and record each as an ADR. No code.
-3. Consumer read client: `fetch_earned` and `build_context` against an in process `build_server(bank)`, with a test that a tampered text (hash mismatch) is refused and that a non earned id never enters a context.
-4. Consumer answer step: `answer` with a recorded call log, keyless replay test, used lesson ids recorded in the output. Any live recording run needs Ashutosh's approval and a stated cap first.
-5. Gated write back: `stage_candidate` plus a test that proves the staged lesson cannot reach the bank or the earned set without poison pass, replay pass and a human approval row bound to its sha256.
-6. Proof that using a lesson worked, as decided in open decision 3, as a rerunnable script with its real output in the PR body.
+Order per [ADR 0005](../adr/0005-hardening-before-consumer.md): hardening first, consumer after.
 
-## 7. Open decisions for Ashutosh (not resolved here)
+1. Close the provenance leak. DONE. Failing test first (evals/test_pyx_mcp_read_path.py), then `LessonBank.provenance` drops `text` for any candidate that is not earned. Verified against runs/pyx_h9_20261102b: all 34 unadmitted candidate ids across the run's candidates files come back without text; the admitted lesson keeps its text.
+2. Settle the open decisions in section 7 and record each as an ADR. DONE: ADRs 0002 to 0006. No code.
+3. Poison screen positive control: a test that the existing screen rejects a known poisoned lesson.
+4. One held out transfer task, kept out of the counted run.
+5. Counted ledger in CI: dash check and README suite count.
+6. Chart generated from runs/pyx_h9_20261102b/RESULTS.md, with a consistency test.
+7. Rerunnable live test scripts. Any run that calls a model needs Ashutosh's approval and a stated cap first.
+8. Consumer read client in the separate `pyx_consumer/` package ([ADR 0003](../adr/0003-separate-consumer-package.md)), with the import ban test: `fetch_earned` and `build_context` against an in process `build_server(bank)`, with a test that a tampered text (hash mismatch) is refused and that a non earned id never enters a context.
+9. Consumer answer step: `answer` with a recorded call log, keyless replay test, used lesson ids recorded in the output. Any live recording run needs Ashutosh's approval and a stated cap first.
+10. Gated write back: `stage_candidate` and the MCP write tool that can only call `propose()` ([ADR 0006](../adr/0006-mcp-write-tool-calls-only-propose.md)), with a test that proves the staged lesson cannot reach the bank or the earned set without poison pass, replay pass and a human approval row bound to its sha256.
+11. Proof that using a lesson worked: held out replay before and after, outside the counted run ([ADR 0004](../adr/0004-proof-by-held-out-replay.md)), as a rerunnable script with its real output in the PR body.
 
-1. Rejected text: hide the record entirely, or show only its hash and status. Ticket 1 ships the conservative default, hash and status with verdict rows and no text. Hiding entirely would also remove the verdict rows that explain why a lesson was rejected.
-2. Package boundary: a separate consumer package, with a producer and consumer import ban enforced by a test or a lint rule, or the consumer living inside `pyx/`.
-3. What proves that using a lesson worked. The current lean is a replay style before and after on a held out task. EVAL.md section 4 keeps held out tasks out of the counted run, so this would be a new measurement, not part of the counted result.
-4. Sequencing. Hackathon Builder proposed landing these before the consumer: a positive control for the poison screen, one held out transfer task, a counted ledger in CI (dash check and README suite count), a chart generated from runs/pyx_h9_20261102b/RESULTS.md with a consistency test, and rerunnable live test scripts. The alternative is the consumer first, as this spec orders it, with those items after.
-5. Write back surface: keep write back a local command (this spec's default), or add an MCP write tool that can only call `propose()`.
+## 7. Decisions
+
+All five were decided Nov 12, 2026 by Muse under Ashutosh's delegated authority; Ashutosh may revisit any of them.
+
+1. Rejected text: hash and status, as ticket 1 ships. [ADR 0002](../adr/0002-rejected-text-hash-and-status.md).
+2. Package boundary: a separate consumer package with a producer and consumer import ban enforced by a test. [ADR 0003](../adr/0003-separate-consumer-package.md).
+3. Proof: replay before and after on a held out task, as a new measurement outside the counted run; EVAL.md untouched. [ADR 0004](../adr/0004-proof-by-held-out-replay.md).
+4. Sequencing: hardening first, consumer after. [ADR 0005](../adr/0005-hardening-before-consumer.md).
+5. Write back: an MCP write tool that can only call `propose()`. [ADR 0006](../adr/0006-mcp-write-tool-calls-only-propose.md).

@@ -1,6 +1,6 @@
 # ADR 0001: the consumer read path serves text only for earned lessons
 
-Status: accepted for the default; the alternative is open decision 1 in docs/specs/step1-consumer-agent.md.
+Status: accepted. The alternative (hiding rejected records entirely) was declined in [ADR 0002](0002-rejected-text-hash-and-status.md).
 Date: 2026-11-12
 
 ## Context
