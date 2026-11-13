@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="252" font-family="sans-serif" font-size="13">
+<text x="10" y="24" font-size="15" font-weight="bold">Pyx counted run pyx_h9_20261102b: criterion pass rate by arm</text>
+<text x="10" y="68">earned_lessons (1 lesson)</text>
+<rect x="230" y="50" width="250.0" height="26" fill="#4a6fa5"/>
+<text x="486.0" y="68">0.625</text>
+<text x="10" y="106">free_lessons (11 lessons)</text>
+<rect x="230" y="88" width="208.3" height="26" fill="#4a6fa5"/>
+<text x="444.3" y="106">0.5208</text>
+<text x="10" y="144">no_memory</text>
+<rect x="230" y="126" width="175.0" height="26" fill="#4a6fa5"/>
+<text x="411.0" y="144">0.4375</text>
+<text x="10" y="182">raw_traces</text>
+<rect x="230" y="164" width="175.0" height="26" fill="#4a6fa5"/>
+<text x="411.0" y="182">0.4375</text>
+<text x="10" y="222" font-size="12">No answer in any arm passed the full rubric. Criterion pass rate, cycle 1, over 6 paired task and repetition cells.</text>
+<text x="10" y="240" font-size="12">Generated from runs/pyx_h9_20261102b/RESULTS.md by pyx/results_chart.py.</text>
+</svg>
