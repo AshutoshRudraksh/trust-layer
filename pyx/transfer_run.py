@@ -14,6 +14,10 @@ Refusals come in a fixed order, before any file is written or any call is made:
    is kept out of calls.jsonl and spend.json (its cost lands in the shared ledger only); run_meta.json records
    the probe verdicts and which Judge B graded the run. Judge B is set with --judge-b provider:model.
 
+Every logged call, worker and judge, is held out: calls.jsonl keeps prompt_sha256 and the replay key, never the
+prompt text, because the worker prompt carries the held out paper and the judge prompt the rubric.
+redact_calls brings an older log to that shape without changing anything a replay reads.
+
 Spend: budget_start.json holds each provider's shared ledger total at start; spend.json is rewritten
 after every call with the new spend per provider (ledger delta for a live run, the logged cost for a
 keyless replay). A call that takes new Meta spend past CAPS["meta"], new Baseten spend past
@@ -345,8 +349,8 @@ def run_transfer(out: Any, rubric_path: Any, paper_path: Any, live: Optional[Dic
             replays.append(inner)
         else:
             inner = guarded[role]
-        recorded = RecordingClient(inner, log, judge=judge, model=model, endpoint=endpoint,
-                                   held_out=(kind == "judge"), kind=kind)
+        # Every call is held out: the worker prompt carries the held out paper, the judge prompt the rubric.
+        recorded = RecordingClient(inner, log, judge=judge, model=model, endpoint=endpoint, held_out=True, kind=kind)
         clients[role] = Metered(recorded, provider, spend)
 
     contexts = {"no_memory": "", "earned_lessons": earned.text}
@@ -372,6 +376,28 @@ def run_transfer(out: Any, rubric_path: Any, paper_path: Any, live: Optional[Dic
     (out / "verdicts.tsv").write_text(header + "".join(r + "\n" for r in rows), encoding="utf-8")
     (out / "rubric.json").write_bytes(Path(rubric_path).read_bytes())
     return {"answers": REPS * len(ARMS), "spend": {p: spend.delta(p) for p in spend.caps}}
+
+
+def redact_calls(path: Any) -> int:
+    """Rewrite a call log so no line carries prompt text: prompt None and held_out true, everything else
+    byte for byte the same (the replay key and prompt_sha256 stay). Each prompt is checked against its
+    prompt_sha256 before anything is written. Returns the number of lines changed; a second pass changes 0."""
+    from pyx.call_log import _canonical
+    path = Path(path)
+    lines = [json.loads(l) for l in path.read_text(encoding="utf-8").splitlines()]
+    changed = 0
+    for number, line in enumerate(lines, start=1):
+        prompt = line.get("prompt")
+        if prompt is not None and _sha256_bytes(prompt.encode("utf-8")) != line.get("prompt_sha256"):
+            raise RefuseToStart(f"{path}: line {number} prompt does not match its prompt_sha256; nothing written")
+        if prompt is not None or line.get("held_out") is not True:
+            line["prompt"], line["held_out"] = None, True
+            changed += 1
+    if changed:
+        tmp = path.with_name(path.name + ".redact.tmp")
+        tmp.write_text("".join(_canonical(l) + "\n" for l in lines), encoding="utf-8")
+        os.replace(tmp, path)
+    return changed
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:

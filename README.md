@@ -102,7 +102,7 @@ rejection that followed from one, required Judge B's vote. No verdict in the run
 Python 3.11 or newer. No key is needed for the test suite, the frozen
 protocol check, or rerunning the counted run.
 
-The suite collects 390 tests (`pytest --collect-only -q`). A test in
+The suite collects 394 tests (`pytest --collect-only -q`). A test in
 evals/test_pyx_suite_ledger.py fails if this number drifts.
 
 ```bash
