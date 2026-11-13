@@ -9,7 +9,10 @@ Refusals come in a fixed order, before any file is written or any call is made:
 2. a live run needs MODEL_API_KEY and BASETEN_API_KEY, both non empty;
 3. no client may be in the Meta client's keyless local fallback (dry_run). NoFallback refuses a keyless
    client at construction and raises FallbackRefused on any dry_run reply before it can be logged, so a
-   fake run is never recorded as real.
+   fake run is never recorded as real;
+4. a live run from the CLI probes Judge A and Judge B once each (PROBE_PROMPT) before any worker call. The probe
+   is kept out of calls.jsonl and spend.json (its cost lands in the shared ledger only); run_meta.json records
+   the probe verdicts and which Judge B graded the run. Judge B is set with --judge-b provider:model.
 
 Spend: budget_start.json holds each provider's shared ledger total at start; spend.json is rewritten
 after every call with the new spend per provider (ledger delta for a live run, the logged cost for a
@@ -21,7 +24,7 @@ from earlier runs tonight too, which this script cannot see; the operator checks
 ledger before starting.
 
 A keyless replay (live=None, src_log=<run>/calls.jsonl) serves every call from the log, needs no key,
-refuses if the paper differs from the recorded paper, and fails if any logged call is left unserved.
+uses the recorded Judge B, refuses if the paper differs from the recorded paper, and fails if any logged call is left unserved.
 The rubric copy is published into the run dir only after a run completes. There is no resume: an
 aborted run is restarted into a new directory.
 """
@@ -62,7 +65,73 @@ class FallbackRefused(RuntimeError):
 
 
 class TransferAbort(RuntimeError):
-    """A spend cap or the hard stop was crossed."""
+    """A spend cap or the hard stop was crossed, or a provider refused a call."""
+
+
+@dataclass(frozen=True)
+class JudgeB:
+    provider: str  # "baseten" or "meta"; also the spend provider its calls are metered under
+    model: str
+    endpoint: str  # "chat_completions" (Baseten) or "responses" (Meta Model API)
+
+
+# Pre-registered Judge B. Its Baseten version (wpgy40e) was retired on Nov 13, 2026; see the amendment in
+# docs/proposals/held-out-transfer-task.md. It stays the default so an unconfigured run is refused by preflight.
+JUDGE_B_PREREGISTERED = JudgeB("baseten", "meta-models/muse-spark-open-1026", "chat_completions")
+JUDGE_B_ENDPOINTS = {"baseten": "chat_completions", "meta": "responses"}
+PROBE_PROMPT = ("Liveness check before a graded run; this is not a graded criterion. "
+                "Reply with exactly one word: PASS or FAIL. Reply PASS.")
+
+
+def parse_judge_b(spec: str) -> JudgeB:
+    """provider:model, for example baseten:meta-models/muse-spark-open or meta:muse-spark-1.3."""
+    from pyx.grade_run import META_MODEL
+    from pyx.worker import WORKER_MODEL
+    provider, sep, model = spec.partition(":")
+    if not sep or provider not in JUDGE_B_ENDPOINTS or not model.strip():
+        raise RefuseToStart(f"Judge B {spec!r}: provider must be one of {sorted(JUDGE_B_ENDPOINTS)}, as provider:model")
+    if "llama" in model.lower():
+        raise RefuseToStart(f"Judge B {model!r}: Llama models are not allowed (Muse ruling, Meta Muse models only)")
+    if provider == "meta" and model in (META_MODEL, WORKER_MODEL):
+        raise RefuseToStart(f"Judge B {model!r} must be distinct from Judge A and the worker")
+    return JudgeB(provider, model, JUDGE_B_ENDPOINTS[provider])
+
+
+class MetaChatJudge:
+    """A Judge B on the Meta Model API: judges.py calls chat(), this answers through respond() with its model."""
+
+    def __init__(self, inner: Any, model: str) -> None:
+        self._inner, self._model = inner, model
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._inner, name)
+
+    def chat(self, prompt: str, max_tokens: int = 512, temperature: float = 0.0) -> Any:
+        return self._inner.respond(prompt, role="eval-runner", model=self._model, reasoning_effort="low",
+                                   max_output_tokens=max_tokens, temperature=temperature)
+
+
+def _describe(exc: BaseException) -> str:
+    import httpx
+    if isinstance(exc, httpx.HTTPStatusError):
+        return f"HTTP {exc.response.status_code}: {' '.join(exc.response.text.split())[:500]}"
+    return f"{type(exc).__name__}: {exc}"
+
+
+def preflight(a: Any, b: Any) -> Dict[str, str]:
+    """Probe both judges once with the judge call shape. Not logged in the run; costs land in the ledger only."""
+    from pyx.judges import _ask, parse_reply
+    result = {}
+    for judge, client in (("A", a), ("B", b)):
+        try:
+            reply = _ask(judge, client, PROBE_PROMPT).output_text
+        except Exception as exc:  # any failure means this judge cannot grade tonight
+            raise RefuseToStart(f"preflight: Judge {judge} did not answer: {_describe(exc)}") from exc
+        verdict = parse_reply(reply)
+        if verdict is None:
+            raise RefuseToStart(f"preflight: Judge {judge} replied {reply[:80]!r}, not PASS or FAIL")
+        result[judge] = verdict
+    return result
 
 
 def _sha256_bytes(data: bytes) -> str:
@@ -185,8 +254,7 @@ class Metered:
             resp = getattr(self._inner, method)(prompt, **kwargs)
         except httpx.HTTPStatusError as exc:  # non retryable (for example 400 deactivated); 429 is retried below us
             self._spend.write()
-            message = " ".join(exc.response.text.split())[:500]
-            self._spend._abort(f"{self._provider} HTTP {exc.response.status_code}: {message}")
+            self._spend._abort(f"{self._provider} {_describe(exc)}")
         self._spend.after_call(self._provider, resp.cost_usd)
         return resp
 
@@ -198,13 +266,12 @@ class Metered:
 
 
 # role: (log judge name, model, endpoint, log kind, provider)
-def _spec() -> Dict[str, Tuple[str, str, str, str, str]]:
-    from agents.baseten_client import BASETEN_MODEL
+def _spec(judge_b: JudgeB) -> Dict[str, Tuple[str, str, str, str, str]]:
     from pyx.grade_run import META_MODEL
     from pyx.worker import WORKER_MODEL
     return {"worker": ("W", WORKER_MODEL, "responses", "worker", "meta"),
             "a": ("A", META_MODEL, "responses", "judge", "meta"),
-            "b": ("B", BASETEN_MODEL, "chat_completions", "judge", "baseten")}
+            "b": ("B", judge_b.model, judge_b.endpoint, "judge", judge_b.provider)}
 
 
 def _grade(answer: str, rubric: Dict[str, Any], a: Any, b: Any) -> List[Tuple[str, str, str, str, str, str]]:
@@ -227,7 +294,8 @@ def _append_jsonl(path: Path, row: Dict[str, Any]) -> None:
 def run_transfer(out: Any, rubric_path: Any, paper_path: Any, live: Optional[Dict[str, Any]], ledger: Any,
                  env: Optional[Mapping[str, str]] = None, src_log: Any = None,
                  expected_sha256: Optional[str] = None, caps: Optional[Mapping[str, float]] = None,
-                 hard_stop_usd: Optional[float] = None) -> Dict[str, Any]:
+                 hard_stop_usd: Optional[float] = None, judge_b: Optional[JudgeB] = None,
+                 probe: bool = False) -> Dict[str, Any]:
     from pyx.call_log import CallLog
     from pyx.recording import RecordingClient
     from pyx.replay_client import ReplayClient
@@ -250,7 +318,10 @@ def run_transfer(out: Any, rubric_path: Any, paper_path: Any, live: Optional[Dic
         src_meta = json.loads((Path(src_log).parent / "run_meta.json").read_text(encoding="utf-8"))
         if src_meta["paper_sha256"] != paper_sha or src_meta["rubric_sha256"] != rubric_sha:
             raise RefuseToStart("keyless replay: the paper or rubric differs from the recorded run")
+        judge_b = JudgeB(**src_meta["judge_b"]) if "judge_b" in src_meta else JUDGE_B_PREREGISTERED
+    judge_b = judge_b or JUDGE_B_PREREGISTERED
     earned = earned_context()
+    probed = preflight(guarded["a"], guarded["b"]) if probe and not keyless else None  # before any worker call
 
     out = Path(out)
     out.mkdir(parents=True, exist_ok=False)
@@ -259,14 +330,16 @@ def run_transfer(out: Any, rubric_path: Any, paper_path: Any, live: Optional[Dic
         "run_id": run_id, "task_id": TASK_ID, "mode": "keyless_replay" if keyless else "live",
         "rubric_sha256": rubric_sha, "paper_sha256": paper_sha, "arms": list(ARMS), "reps": REPS,
         "earned_lesson_ids": list(earned.lesson_ids), "earned_lesson_sha256": EARNED_LESSON_SHA256,
-        "source_log": str(src_log) if keyless else ""}, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        "source_log": str(src_log) if keyless else "",
+        "judge_b": {"provider": judge_b.provider, "model": judge_b.model, "endpoint": judge_b.endpoint},
+        "preflight": probed}, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     spend = Spend(out, ledger, caps or CAPS, HARD_STOP_USD if hard_stop_usd is None else hard_stop_usd)
 
     log = CallLog(out / "calls.jsonl", run_id)
     clients: Dict[str, Any] = {}
     replays: List[Any] = []
     lines = [] if not keyless else CallLog(Path(src_log), run_id).read()
-    for role, (judge, model, endpoint, kind, provider) in _spec().items():
+    for role, (judge, model, endpoint, kind, provider) in _spec(judge_b).items():
         if keyless:
             inner = ReplayClient(lines, judge, kind, fallback=False)
             replays.append(inner)
@@ -308,6 +381,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--out", required=True, help="new run directory, for example runs/pyx_transfer_h2_20261113")
     parser.add_argument("--keyless", action="store_true", help="replay from --from with no key and no network")
     parser.add_argument("--from", dest="src", help="recorded run directory for --keyless")
+    parser.add_argument("--judge-b", help="provider:model for Judge B, for example baseten:meta-models/muse-spark-open; "
+                                          "defaults to the pre-registered (retired) Judge B; keyless uses the recorded one")
     args = parser.parse_args(argv)
     try:
         verify_rubric(args.rubric)  # first, before the ledger or keys are looked at
@@ -325,10 +400,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             from agents.meta_client import MetaModelClient
             from agents.spend_ledger import SpendLedger
             from pyx.worker import worker_client
+            judge_b = parse_judge_b(args.judge_b) if args.judge_b else JUDGE_B_PREREGISTERED
             ledger = SpendLedger()
-            live = {"worker": worker_client(ledger=ledger), "a": MetaModelClient(ledger=ledger),
-                    "b": BasetenClient(ledger=ledger)}
-            summary = run_transfer(args.out, args.rubric, args.paper, live, ledger)
+            b = (BasetenClient(model=judge_b.model, ledger=ledger) if judge_b.provider == "baseten"
+                 else MetaChatJudge(MetaModelClient(ledger=ledger), judge_b.model))
+            live = {"worker": worker_client(ledger=ledger), "a": MetaModelClient(ledger=ledger), "b": b}
+            summary = run_transfer(args.out, args.rubric, args.paper, live, ledger, judge_b=judge_b, probe=True)
     except (RefuseToStart, FallbackRefused, TransferAbort) as exc:
         print(f"{type(exc).__name__}: {exc}", file=sys.stderr)
         return 2
