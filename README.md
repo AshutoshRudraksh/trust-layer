@@ -20,7 +20,7 @@ Nov 2026), solo, on Meta models only.
 **Demo video:** [I Poisoned My AI's Memory | 11 Lessons Stood Trial, Only 1 Survived](https://www.youtube.com/watch?v=gM4wEFahqPY)
 ## Live build dashboard
 
-**[Open the live dashboard](https://muse.ai/s/pyx-dashboard-share-xlc6lxjxmjzx0zb/EHrGdWEIh-iif3yi7tsfTlNWTsgDqvsVBWcF4M6nsjo)** — it reads this repository as you open it, so it always shows the entire progress: every pull request, commit, and branch, plus the counted run record.
+**[Open the live dashboard](https://muse.ai/s/pyx-dashboard-share-xlc6lxjxmjzx0zb/EHrGdWEIh-iif3yi7tsfTlNWTsgDqvsVBWcF4M6nsjo)**. It reads this repository as you open it, so it always shows the entire progress: every pull request, commit, and branch, plus the counted run record.
 
 ## Words we use
 
@@ -101,6 +101,9 @@ rejection that followed from one, required Judge B's vote. No verdict in the run
 
 Python 3.11 or newer. No key is needed for the test suite, the frozen
 protocol check, or rerunning the counted run.
+
+The suite collects 350 tests (`pytest --collect-only -q`). A test in
+evals/test_pyx_suite_ledger.py fails if this number drifts.
 
 ```bash
 pip install -e ".[dev,mcp]"

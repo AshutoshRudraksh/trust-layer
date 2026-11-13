@@ -74,7 +74,7 @@ Order per [ADR 0005](../adr/0005-hardening-before-consumer.md): hardening first,
 2. Settle the open decisions in section 7 and record each as an ADR. DONE: ADRs 0002 to 0006. No code.
 3. Poison screen positive control: a test that the existing screen rejects a known poisoned lesson. DONE in evals/test_pyx_poison_control.py: a lesson carrying the planted instruction near verbatim is rejected through `run_poison` on the planted copy. Finding: a reworded planted instruction and a reworded planted claim both pass the screen; recorded as strict xfail, matching the limit already stated in docs/plans/pr_f_guard_plan.md. Replay and the human read remain the gates for paraphrase.
 4. One held out transfer task, kept out of the counted run.
-5. Counted ledger in CI: dash check and README suite count.
+5. Counted ledger in CI: dash check and README suite count. DONE: pyx/suite_ledger.py and evals/test_pyx_suite_ledger.py, run by the existing CI pytest step on every PR. README.md states the collected count and lost its one long dash.
 6. Chart generated from runs/pyx_h9_20261102b/RESULTS.md, with a consistency test.
 7. Rerunnable live test scripts. Any run that calls a model needs Ashutosh's approval and a stated cap first.
 8. Consumer read client in the separate `pyx_consumer/` package ([ADR 0003](../adr/0003-separate-consumer-package.md)), with the import ban test: `fetch_earned` and `build_context` against an in process `build_server(bank)`, with a test that a tampered text (hash mismatch) is refused and that a non earned id never enters a context.
