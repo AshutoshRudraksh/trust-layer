@@ -1,6 +1,6 @@
 # Proposal: one held out transfer task for the replay measurement
 
-Status: Proposal, awaiting Muse ruling before any model run.
+Status: Approved by Muse Nov 13, 2026, under Ashutosh's delegated authority. No model run has happened yet.
 Serves: [ADR 0004](../adr/0004-proof-by-held-out-replay.md) and ticket 4 in [the Step 1 spec](../specs/step1-consumer-agent.md).
 Date: Nov 13, 2026.
 
@@ -41,16 +41,18 @@ Eight criteria, mirroring T1.json and T2.json:
 
 | ID | Type | Source | Pass rule |
 | --- | --- | --- | --- |
-| H2.C1 | programmatic, number | Table 1 | The answer states the headline resolve rate of the main configuration and of the strongest baseline in that table, within the table's printed precision, and the difference. |
+| H2.C1 | programmatic, number | Table 1 | The answer states the headline resolve rate on the full SWE-bench split for the main configuration and for the strongest baseline in that table, within the table's printed precision, and the difference. |
 | H2.C2 | programmatic, number | Table 1 | The answer states one cost or efficiency figure from the table for the main configuration. |
-| H2.C3 | programmatic, number | Table 2 | The answer states the ablation result for one named interface component: with and without, both values. |
-| H2.C4 | programmatic, number | Table 2 | The answer identifies the largest drop in the ablation table and its size. |
-| H2.C5 | programmatic, number | Table 3 | The answer states one value from Table 3 with its row and column. |
-| H2.C6 | programmatic, components | Figure 1 | The answer names the components shown in the architecture figure (count fixed at freeze). |
+| H2.C3 | programmatic, number | Table 3 | The answer states the ablation result for one named interface component: with and without, both values. |
+| H2.C4 | programmatic, number | Table 3 | The answer identifies the largest drop in the ablation table and its size. |
+| H2.C5 | programmatic, number | Table 3 | The answer states one further value from Table 3 with its row and column. |
+| H2.C6 | programmatic, components | Figure 1 | The answer names the 9 labels inside the figure's boxes. |
 | H2.C7 | judged | Results analysis section | **Transfer criterion.** PASS if the answer explains why a reported result came out as it did, using the cause the authors give in their analysis text, not only restating the number. |
 | H2.C8 | judged | Table with a non obvious column | **Transfer criterion.** PASS if the answer defines what a non obvious column measures, using the paper's own definition. |
 
-Freezing: the filled rubric (exact values, tolerances, component list, the specific result and column for C7 and C8) is written by Muse or Ashutosh outside this repo, frozen, and its sha256 is committed here in a follow up before any model call. The worker and the distiller never see it.
+Table numbers follow arXiv 2405.15793v3, where the ablation table is Table 3.
+
+Freezing: the filled rubric (exact values, tolerances, component list, the specific result and column for C7 and C8) is authored and frozen by Muse outside this repo. Its sha256 is committed in [held-out-rubric.sha256](held-out-rubric.sha256). It is given to the grader and the checker only, never to the worker or the distiller, and is published into the run directory after the run.
 
 ## 6. Models (Meta models only)
 
@@ -104,7 +106,16 @@ Pre registered, decided before the run:
 
 Either way the report states plainly: one task, one lesson, 5 repetitions, and that this says nothing about the counted run's numbers or about lessons in general.
 
-## 9. Open questions for Muse
+## 9. Rulings (Muse, Nov 13, 2026)
+
+1. Paper: H2, SWE-agent, arXiv 2405.15793v3.
+2. Repetitions: 5 paired repetitions.
+3. Caps: abort when new Meta spend passes $3 or new Baseten spend passes $5; hard stop at $25 total; all inside a $40 combined envelope for tonight. Enforced in code by pyx/transfer_run.py.
+4. Judge B stays muse-spark-open-1026 on Baseten, the same host as the counted run.
+5. Rubric: authored and frozen by Muse outside the repo, given to the grader and the checker only, never to the worker or the distiller, published into the run directory after the run. Frozen sha256: 2e7de886b5bfd18c42a4d8563c8d39ddd7c4944c63478a3e19c4e0dcbd75a143.
+6. Freeze rulings: table numbering follows arXiv v3, so the ablation criteria H2.C3, H2.C4, and H2.C5 source Table 3; H2.C1 is scoped to the full SWE-bench split; H2.C6 counts the 9 labels inside the figure's boxes.
+
+## 10. Questions as asked before the rulings
 
 1. Which held out paper: H2 as recommended, or H1, H3, H4?
 2. Who writes and freezes the filled rubric outside the repo, and where is it stored?
