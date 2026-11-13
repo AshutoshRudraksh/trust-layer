@@ -1,0 +1,23 @@
+{
+  "arms": [
+    "no_memory",
+    "earned_lessons"
+  ],
+  "earned_lesson_ids": [
+    "L_T1.C8_79e93c16"
+  ],
+  "earned_lesson_sha256": "79e93c169ff6d8ae142cab2a2f4c2c229e118714e07e9aefce182a415e5a928d",
+  "judge_b": {
+    "endpoint": "responses",
+    "model": "muse-spark-1.3",
+    "provider": "meta"
+  },
+  "mode": "keyless_replay",
+  "paper_sha256": "b6e142cb7634120ad58df07b489aaf608a7023c10618abf55d2425807ec50a14",
+  "preflight": null,
+  "reps": 5,
+  "rubric_sha256": "3aec5d322432266a9010c7ce55b7c85c9498162a3b40b85684ca3f1bc5d48754",
+  "run_id": "pyx_transfer_h2_20261113c_replay",
+  "source_log": "runs/pyx_transfer_h2_20261113c/calls.jsonl",
+  "task_id": "H2"
+}

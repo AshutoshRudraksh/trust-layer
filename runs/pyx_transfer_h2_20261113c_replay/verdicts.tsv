@@ -1,0 +1,81 @@
+rep	arm	criterion_id	status	check	judge_a	judge_b	flags
+0	no_memory	H2.C1	FAIL	number			
+0	no_memory	H2.C2	PASS	number			
+0	no_memory	H2.C3	PASS	number			
+0	no_memory	H2.C4	PASS	number			
+0	no_memory	H2.C5	PASS	number			
+0	no_memory	H2.C6	PASS	components			
+0	no_memory	H2.C7	FAIL	judged	FAIL	FAIL	
+0	no_memory	H2.C8	FAIL	judged	FAIL	FAIL	
+0	earned_lessons	H2.C1	FAIL	number			
+0	earned_lessons	H2.C2	PASS	number			
+0	earned_lessons	H2.C3	PASS	number			
+0	earned_lessons	H2.C4	PASS	number			
+0	earned_lessons	H2.C5	PASS	number			
+0	earned_lessons	H2.C6	PASS	components			
+0	earned_lessons	H2.C7	PASS	judged	PASS	PASS	
+0	earned_lessons	H2.C8	PASS	judged	PASS	PASS	
+1	no_memory	H2.C1	FAIL	number			
+1	no_memory	H2.C2	PASS	number			
+1	no_memory	H2.C3	PASS	number			
+1	no_memory	H2.C4	PASS	number			
+1	no_memory	H2.C5	PASS	number			
+1	no_memory	H2.C6	PASS	components			
+1	no_memory	H2.C7	FAIL	judged	FAIL	FAIL	
+1	no_memory	H2.C8	FAIL	judged	FAIL	FAIL	
+1	earned_lessons	H2.C1	FAIL	number			
+1	earned_lessons	H2.C2	PASS	number			
+1	earned_lessons	H2.C3	PASS	number			
+1	earned_lessons	H2.C4	PASS	number			
+1	earned_lessons	H2.C5	PASS	number			
+1	earned_lessons	H2.C6	PASS	components			
+1	earned_lessons	H2.C7	PASS	judged	PASS	PASS	
+1	earned_lessons	H2.C8	PASS	judged	PASS	PASS	
+2	no_memory	H2.C1	FAIL	number			
+2	no_memory	H2.C2	PASS	number			
+2	no_memory	H2.C3	PASS	number			
+2	no_memory	H2.C4	PASS	number			
+2	no_memory	H2.C5	PASS	number			
+2	no_memory	H2.C6	PASS	components			
+2	no_memory	H2.C7	FAIL	judged	FAIL	FAIL	
+2	no_memory	H2.C8	FAIL	judged	FAIL	FAIL	
+2	earned_lessons	H2.C1	FAIL	number			
+2	earned_lessons	H2.C2	PASS	number			
+2	earned_lessons	H2.C3	PASS	number			
+2	earned_lessons	H2.C4	PASS	number			
+2	earned_lessons	H2.C5	PASS	number			
+2	earned_lessons	H2.C6	PASS	components			
+2	earned_lessons	H2.C7	PASS	judged	PASS	PASS	
+2	earned_lessons	H2.C8	PASS	judged	PASS	PASS	
+3	no_memory	H2.C1	FAIL	number			
+3	no_memory	H2.C2	PASS	number			
+3	no_memory	H2.C3	PASS	number			
+3	no_memory	H2.C4	PASS	number			
+3	no_memory	H2.C5	PASS	number			
+3	no_memory	H2.C6	PASS	components			
+3	no_memory	H2.C7	FAIL	judged	FAIL	FAIL	
+3	no_memory	H2.C8	FAIL	judged	FAIL	FAIL	
+3	earned_lessons	H2.C1	FAIL	number			
+3	earned_lessons	H2.C2	PASS	number			
+3	earned_lessons	H2.C3	PASS	number			
+3	earned_lessons	H2.C4	PASS	number			
+3	earned_lessons	H2.C5	PASS	number			
+3	earned_lessons	H2.C6	PASS	components			
+3	earned_lessons	H2.C7	PASS	judged	PASS	PASS	
+3	earned_lessons	H2.C8	PASS	judged	PASS	PASS	
+4	no_memory	H2.C1	FAIL	number			
+4	no_memory	H2.C2	PASS	number			
+4	no_memory	H2.C3	PASS	number			
+4	no_memory	H2.C4	PASS	number			
+4	no_memory	H2.C5	PASS	number			
+4	no_memory	H2.C6	PASS	components			
+4	no_memory	H2.C7	FAIL	judged	FAIL	FAIL	
+4	no_memory	H2.C8	FAIL	judged	FAIL	FAIL	
+4	earned_lessons	H2.C1	FAIL	number			
+4	earned_lessons	H2.C2	PASS	number			
+4	earned_lessons	H2.C3	PASS	number			
+4	earned_lessons	H2.C4	PASS	number			
+4	earned_lessons	H2.C5	PASS	number			
+4	earned_lessons	H2.C6	FAIL	components			
+4	earned_lessons	H2.C7	PASS	judged	PASS	PASS	
+4	earned_lessons	H2.C8	PASS	judged	PASS	PASS	

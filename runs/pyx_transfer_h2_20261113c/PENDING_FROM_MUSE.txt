@@ -1,0 +1,11 @@
+PENDING FROM MUSE: the Markdown freeze of the H2 rubric (sha256 2e7de886b5bfd18c42a4d8563c8d39ddd7c4944c63478a3e19c4e0dcbd75a143).
+Muse ruled it goes into this run directory after the run. We do not have the .md file, so it is not here and was not recreated.
+The JSON freeze that graded this run has sha256 3aec5d322432266a9010c7ce55b7c85c9498162a3b40b85684ca3f1bc5d48754 (run_meta.json).
+Its copy (rubric.json) exists in the box run directory but is not committed: the repo is public and the held out rubric stays out of it until Ashutosh decides.
+
+Not published, per Ashutosh's choice (option A, Nov 13, 2026, 2:45 AM PST): answers.jsonl (the raw worker answers) for this run and its
+replay is held locally on the box and kept out of the repo by .gitignore. verdicts.tsv, spend.json, run_meta.json and calls.jsonl
+are published. Option A-strict (2:49 AM PST): in the published calls.jsonl of this run and its replay, each worker reply is replaced
+by reply_sha256 (pyx/transfer_run.py hash_worker_replies), so it holds no raw worker answer and no prompt text. The full logs stay on the
+box as calls.full.jsonl (gitignored). A keyless replay needs the full log, so the byte for byte replay match is checkable on the box
+only: python3 -m pyx.transfer_run --keyless --from <dir holding the full log as calls.jsonl> ...
