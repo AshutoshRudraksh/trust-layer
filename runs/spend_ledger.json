@@ -480,9 +480,11 @@
         "resp_6aea632b6eef19a451734ef6:17bfedfff2e64cddb814cf57090f57d5",
         "resp_6aea63381e67efc884384da5:58ea6afc5e144f9dbe1c01de2882e760",
         "resp_6af6d9289c6cfbd5512c496b:bdfbf689854b4524ae9f01d9ed224c85",
-        "resp_6af6d92c1ffc74d9bb304ed5:e962be9e648847bfb9faf2adea8e6f39"
+        "resp_6af6d92c1ffc74d9bb304ed5:e962be9e648847bfb9faf2adea8e6f39",
+        "resp_6af6dc953da5c896969f40ec:fbcdd5812bfb485e97f685dd03ac5816",
+        "resp_6af6dc9ac35e955338094e33:1677932f2a314d4c906e813379e57bba"
       ],
-      "total_usd": 0.4276598
+      "total_usd": 0.4367107
     }
   },
   "version": 1

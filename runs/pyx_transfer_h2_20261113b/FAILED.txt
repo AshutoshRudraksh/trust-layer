@@ -1,0 +1,6 @@
+FAILED: this run aborted at 1:47 AM PST on Nov 13, 2026, on the first Judge B call (second attempt).
+Baseten returned HTTP 400: "Model version wpgy40e is deactivated. It needs to be activated before running predictions".
+The clean abort path (commit 4c3314b) wrote abort.txt and the script exited with code 2.
+Calls made: 1 worker call (no_memory, rep 0) and 1 Judge A call; both are in calls.jsonl.
+Spend: Meta $0.0090509 (shared ledger 0.4276598 to 0.4367107), Baseten $0.00.
+No answers.jsonl, no verdicts.tsv: this run has no verdicts and is not a result.
