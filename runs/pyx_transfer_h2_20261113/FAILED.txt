@@ -1,0 +1,7 @@
+FAILED: this run stopped at 1:32 AM PST on Nov 13, 2026, on the first Judge B call.
+Baseten returned HTTP 400: "Model version wpgy40e is deactivated. It needs to be activated before running predictions".
+The error was not a handled judge fault, so the script crashed without writing abort.txt.
+Calls made: 1 worker call (no_memory, rep 0) and 1 Judge A call; both are in calls.jsonl.
+Spend: Meta $0.008874 (shared ledger 0.4187858 to 0.4276598), Baseten $0.00.
+No answers.jsonl, no verdicts.tsv: this run has no verdicts and is not a result.
+The rerun goes into runs/pyx_transfer_h2_20261113b after the Judge B deployment is reactivated.

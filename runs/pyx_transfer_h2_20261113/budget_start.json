@@ -1,0 +1,11 @@
+{
+  "caps_usd": {
+    "baseten": 5.0,
+    "meta": 3.0
+  },
+  "hard_stop_usd": 25.0,
+  "ledger_total_usd": {
+    "baseten": 1.33899175,
+    "meta": 0.4187858
+  }
+}

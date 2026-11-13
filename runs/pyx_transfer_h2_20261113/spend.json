@@ -1,0 +1,12 @@
+{
+  "baseten": {
+    "cap_usd": 5.0,
+    "logged_cost_usd": 0.0,
+    "run_delta": 0.0
+  },
+  "meta": {
+    "cap_usd": 3.0,
+    "logged_cost_usd": 0.008874,
+    "run_delta": 0.008874
+  }
+}
