@@ -1,6 +1,6 @@
 # Proposal: one held out transfer task for the replay measurement
 
-Status: Approved by Muse Nov 13, 2026, under Ashutosh's delegated authority. No model run has happened yet.
+Status: Approved by Muse Nov 13, 2026, under Ashutosh's delegated authority. Amended Nov 13, 2026 (section 11, revision 2): Judge B replaced before the graded run. Two earlier attempts aborted on Judge B before any verdict.
 Serves: [ADR 0004](../adr/0004-proof-by-held-out-replay.md) and ticket 4 in [the Step 1 spec](../specs/step1-consumer-agent.md).
 Date: Nov 13, 2026.
 
@@ -60,7 +60,7 @@ Freezing: the filled rubric (exact values, tolerances, component list, the speci
 | --- | --- | --- | --- |
 | Worker | muse-spark-1.3-contributor | Meta Model API | README.md model table, the counted run's worker |
 | Judge A | muse-spark-1.3-contributor | Meta Model API | same |
-| Judge B | muse-spark-open-1026 (Meta's open weight model) | Baseten | same; Baseten is the host, the model is Meta's |
+| Judge B | ~~muse-spark-open-1026 (Meta's open weight model), Baseten~~ superseded; now muse-spark-1.3 | Meta Model API | amendment, section 11 |
 
 No distiller call: this measurement uses the already earned lesson and distills nothing.
 
@@ -122,3 +122,23 @@ Either way the report states plainly: one task, one lesson, 5 repetitions, and t
 3. 5 repetitions, or 3 to match the counted run?
 4. The caps in section 7: $3 Meta, $5 Baseten, $25 hard stop. Approve, or set others?
 5. Is Judge B on Baseten acceptable under "Meta models only" (Meta's model on a third party host)?
+
+## 11. Amendment, revision 2 (Nov 13, 2026): Judge B superseded
+
+Recorded before any paid call of the graded run. Approved by Ashutosh at 2:18 AM PST ("Go, start the held-out run with the new second judge"), following Muse's candidate order.
+
+**What changes: the Judge B line only.** Judge B muse-spark-open-1026 on Baseten is superseded by **muse-spark-1.3 on the Meta Model API**.
+
+**Why.** The provider retired the pre-registered Judge B. Two attempts (runs/pyx_transfer_h2_20261113 and runs/pyx_transfer_h2_20261113b, both committed with FAILED.txt) stopped on the first Judge B call with Baseten HTTP 400 "Model version wpgy40e is deactivated". As reported to me by Muse: Baseten's docs list only meta-models/muse-spark-open, and a read only GET /v1/models for the workspace returned {"models": []}, so there is no dedicated deployment to reactivate.
+
+**How the replacement was chosen** (Muse's order: Meta models only, never Llama, distinct from Judge A and the worker; take the first that answers a liveness probe):
+
+1. meta-models/muse-spark-open on Baseten: refused, HTTP 403 "please check the api-key you provided". The Baseten key in use is not authorized for this model. No Baseten spend.
+2. The same open weights on Fireworks: skipped, no Fireworks key in the environment.
+3. Another Muse model on the Meta Model API, distinct from muse-spark-1.3-contributor: the API lists muse-spark-1.3, muse-spark-1.2, muse-spark-1.2-contributor and muse-spark-1.1 among its text models. muse-spark-1.3 is the first tried and answered the probe (PASS from both judges). It is also the one Muse model besides the contributor model that the repo's pricing table prices ($1.25 per million input tokens, $4.25 per million output tokens), so its spend is computed, not guessed. The probes cost $0.0006447 of Meta spend, counted in the shared ledger and kept out of the run record.
+
+**Comparability.** Judged criteria (H2.C7, H2.C8) are comparable within this run only, between its two arms, which share the same two judges. They are never pooled with or compared to the counted run's judged verdicts, which used muse-spark-open-1026 as Judge B. Judge A and Judge B now share a provider and model family; they remain distinct models.
+
+**Unchanged.** Rubric sha256 3aec5d322432266a9010c7ce55b7c85c9498162a3b40b85684ca3f1bc5d48754; the lesson L_T1.C8_79e93c16; 5 paired repetitions; the success bar in section 8; the caps ($3 new Meta spend, $5 new Baseten spend, $25 hard stop). Judge B's calls now count as Meta spend, so the $3 Meta cap covers the worker and both judges.
+
+**Recorded in the run.** pyx/transfer_run.py takes Judge B as --judge-b meta:muse-spark-1.3, probes both judges before any worker call, and writes the Judge B provider, model and endpoint and the probe verdicts into run_meta.json.
