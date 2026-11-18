@@ -52,6 +52,10 @@ criteria):
 | no_memory | 0.4375 |
 | raw_traces | 0.4375 |
 
+![Criterion pass rate by arm, run pyx_h9_20261102b](docs/counted_result_chart.svg)
+
+*Criterion pass rate by arm (conclusive criteria, cycle 1), drawn by scripts/make_counted_result_chart.py from runs/pyx_h9_20261102b/RESULTS.md.*
+
 Paired bootstrap 95% CIs on the earned arm's advantage exclude zero
 against every arm (free +0.104 [+0.021, +0.229], no memory +0.188
 [+0.146, +0.229], raw traces +0.188 [+0.125, +0.271], over 6 paired

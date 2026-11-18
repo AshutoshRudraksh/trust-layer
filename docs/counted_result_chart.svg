@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="740" height="460" viewBox="0 0 740 460" font-family="sans-serif" role="img" aria-label="Criterion pass rate by arm, run pyx_h9_20261102b">
+<rect x="0" y="0" width="740" height="460" fill="#ffffff"/>
+<text x="70" y="30" font-size="18" font-weight="bold" fill="#111111">Criterion pass rate by arm</text>
+<text x="70" y="50" font-size="12" fill="#555555">run pyx_h9_20261102b, values from runs/pyx_h9_20261102b/RESULTS.md</text>
+<line x1="70" y1="370.00" x2="710" y2="370.00" stroke="#dddddd" stroke-width="1"/>
+<text x="62" y="370.00" font-size="11" fill="#555555" text-anchor="end" dominant-baseline="middle">0</text>
+<line x1="70" y1="295.00" x2="710" y2="295.00" stroke="#dddddd" stroke-width="1"/>
+<text x="62" y="295.00" font-size="11" fill="#555555" text-anchor="end" dominant-baseline="middle">0.25</text>
+<line x1="70" y1="220.00" x2="710" y2="220.00" stroke="#dddddd" stroke-width="1"/>
+<text x="62" y="220.00" font-size="11" fill="#555555" text-anchor="end" dominant-baseline="middle">0.5</text>
+<line x1="70" y1="145.00" x2="710" y2="145.00" stroke="#dddddd" stroke-width="1"/>
+<text x="62" y="145.00" font-size="11" fill="#555555" text-anchor="end" dominant-baseline="middle">0.75</text>
+<line x1="70" y1="70.00" x2="710" y2="70.00" stroke="#dddddd" stroke-width="1"/>
+<text x="62" y="70.00" font-size="11" fill="#555555" text-anchor="end" dominant-baseline="middle">1</text>
+<line x1="70" y1="370" x2="710" y2="370" stroke="#333333" stroke-width="1"/>
+<rect class="bar" data-arm="earned_lessons (1 lesson)" data-value="0.625" x="110" y="182.50" width="110" height="187.50" fill="#2f6fdf"/>
+<text x="165" y="176.50" font-size="13" font-weight="bold" fill="#111111" text-anchor="middle">0.625</text>
+<text x="165" y="390" font-size="12" fill="#111111" text-anchor="middle">earned_lessons</text>
+<text x="165" y="406" font-size="11" fill="#555555" text-anchor="middle">(1 lesson)</text>
+<rect class="bar" data-arm="free_lessons (11 lessons)" data-value="0.5208" x="260" y="213.76" width="110" height="156.24" fill="#9aa5b1"/>
+<text x="315" y="207.76" font-size="13" font-weight="bold" fill="#111111" text-anchor="middle">0.5208</text>
+<text x="315" y="390" font-size="12" fill="#111111" text-anchor="middle">free_lessons</text>
+<text x="315" y="406" font-size="11" fill="#555555" text-anchor="middle">(11 lessons)</text>
+<rect class="bar" data-arm="no_memory" data-value="0.4375" x="410" y="238.75" width="110" height="131.25" fill="#9aa5b1"/>
+<text x="465" y="232.75" font-size="13" font-weight="bold" fill="#111111" text-anchor="middle">0.4375</text>
+<text x="465" y="390" font-size="12" fill="#111111" text-anchor="middle">no_memory</text>
+<rect class="bar" data-arm="raw_traces" data-value="0.4375" x="560" y="238.75" width="110" height="131.25" fill="#9aa5b1"/>
+<text x="615" y="232.75" font-size="13" font-weight="bold" fill="#111111" text-anchor="middle">0.4375</text>
+<text x="615" y="390" font-size="12" fill="#111111" text-anchor="middle">raw_traces</text>
+</svg>
