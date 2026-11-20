@@ -487,6 +487,16 @@ class ApprovalGate:
                 f"Cannot execute approval '{approval_id}' with status '{status}'. Explicit APPROVED state required."
             )
 
+        lock_row = self._conn.execute(
+            "SELECT * FROM denial_locks WHERE idempotency_key = ?",
+            (idempotency_key,),
+        ).fetchone()
+        if lock_row is not None and lock_row["denied_instruction_id"] == approval_row["instruction_id"]:
+            raise DenialLockError(
+                f"Cannot execute approval '{approval_id}' because it is locked after denial "
+                f"under instruction '{approval_row['instruction_id']}'."
+            )
+
         action_row = self._conn.execute(
             "SELECT * FROM actions WHERE action_id = ?",
             (action_id,),
