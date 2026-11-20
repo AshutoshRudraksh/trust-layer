@@ -13,6 +13,7 @@ from gate.approval_gate import (
     ActionProposal,
     ApprovalDecision,
     ApprovalGate,
+    ApprovalNotPendingError,
     DenialLockError,
     DraftOnlyViolationError,
     UnapprovedExecutionError,
@@ -150,6 +151,8 @@ def create_app(db_path: str = ":memory:") -> FastAPI:
             return asdict(record)
         except KeyError as exc:
             raise HTTPException(status_code=404, detail=str(exc)) from exc
+        except ApprovalNotPendingError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
         except ValueError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
 

@@ -397,22 +397,32 @@ class ApprovalGate:
         if normalized not in {"APPROVED", "DENIED"}:
             raise ValueError(f"Unsupported approval decision '{decision.decision}'. Expected APPROVED or DENIED.")
 
+        now = self._now_iso()
+        cursor = self._conn.execute(
+            """
+            UPDATE approvals
+            SET status = ?, decided_at = ?, decided_by = ?, denial_reason = ?
+            WHERE approval_id = ? AND status = 'PENDING'
+            """,
+            (normalized, now, decision.decided_by, decision.reason, decision.approval_id),
+        )
+        if cursor.rowcount == 0:
+            self._conn.rollback()
+            row = self._conn.execute(
+                "SELECT * FROM approvals WHERE approval_id = ?",
+                (decision.approval_id,),
+            ).fetchone()
+            if row is None:
+                raise KeyError(f"Approval '{decision.approval_id}' not found.")
+            raise ApprovalNotPendingError(
+                f"Cannot decide approval '{decision.approval_id}' with status '{row['status']}'. "
+                "Only PENDING approvals can be decided."
+            )
+
         row = self._conn.execute(
             "SELECT * FROM approvals WHERE approval_id = ?",
             (decision.approval_id,),
         ).fetchone()
-        if row is None:
-            raise KeyError(f"Approval '{decision.approval_id}' not found.")
-
-        now = self._now_iso()
-        self._conn.execute(
-            """
-            UPDATE approvals
-            SET status = ?, decided_at = ?, decided_by = ?, denial_reason = ?
-            WHERE approval_id = ?
-            """,
-            (normalized, now, decision.decided_by, decision.reason, decision.approval_id),
-        )
 
         if normalized == "DENIED":
             self._conn.execute(
