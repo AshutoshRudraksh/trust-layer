@@ -11,9 +11,27 @@ not fail the test.
 from __future__ import annotations
 
 import re
+import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+# Frozen source paper copies. The poison check and the frozen eval
+# hash-bind these exact files, so this scanner must never require
+# edits there. Other markdown under pyx/tasks/ is still scanned.
+EXCLUDED_MARKDOWN = (
+    "pyx/tasks/T1_reflexion_v4.clean.md",
+    "pyx/tasks/T1_reflexion_v4.planted.md",
+    "pyx/tasks/T2_agentless_v2.clean.md",
+)
+
+
+def tracked_markdown_files() -> list[str]:
+    return subprocess.check_output(
+        ["git", "ls-files", "*.md"],
+        cwd=ROOT,
+        text=True,
+    ).splitlines()
+
 EM = "\u2014"
 EN = "\u2013"
 FIGURE = "\u2012"
@@ -205,3 +223,17 @@ def test_scanner_reports_figure_dash_horizontal_bar_and_minus_sign(tmp_path: Pat
         "sample.md:2: horizontal bar (U+2015)",
         "sample.md:3: minus sign (U+2212)",
     ]
+
+
+def test_scan_covers_every_tracked_markdown_file_except_frozen_papers() -> None:
+    excluded = set(EXCLUDED_MARKDOWN)
+    expected = [ROOT / rel for rel in tracked_markdown_files() if rel not in excluded]
+    found = prose_markdown_files()
+    assert found == expected
+    assert ROOT / "pyx/tasks/manifest.md" in found
+
+
+def test_excluded_paths_are_tracked_files() -> None:
+    tracked = set(tracked_markdown_files())
+    missing = [rel for rel in EXCLUDED_MARKDOWN if rel not in tracked]
+    assert missing == [], "exclusion list has stale paths: " + ", ".join(missing)
