@@ -131,3 +131,21 @@ def test_readme_and_docs_contain_no_typographic_dashes() -> None:
     for path in prose_markdown_files():
         found.extend(typographic_dash_hits(path, root=ROOT))
     assert found == [], "typographic dashes in prose:\n" + "\n".join(found)
+
+
+def test_scanner_reports_unclosed_fence(tmp_path: Path) -> None:
+    path = tmp_path / "sample.md"
+    path.write_text(
+        "\n".join(
+            [
+                "```",
+                f"code {EM} here",
+                "still open",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    assert typographic_dash_hits(path) == [
+        "sample.md:1: unclosed fenced code block",
+    ]
