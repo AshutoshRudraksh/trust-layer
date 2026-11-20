@@ -84,7 +84,12 @@ def typographic_dash_hits(path: Path, *, root: Path | None = None) -> list[str]:
                 fence_char, fence_len = char, length
                 fence_open_line = lineno
                 continue
-            if char == fence_char and length >= fence_len:
+            rest = line[match.end():]
+            if (
+                char == fence_char
+                and length >= fence_len
+                and all(c in " \t" for c in rest)
+            ):
                 in_fence = False
                 fence_char, fence_len, fence_open_line = "", 0, 0
                 continue
