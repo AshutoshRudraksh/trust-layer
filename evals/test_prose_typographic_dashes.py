@@ -73,6 +73,7 @@ def typographic_dash_hits(path: Path, *, root: Path | None = None) -> list[str]:
     in_fence = False
     fence_char = ""
     fence_len = 0
+    fence_open_line = 0
     for lineno, line in enumerate(text.splitlines(), 1):
         match = FENCE.match(line)
         if match:
@@ -81,10 +82,11 @@ def typographic_dash_hits(path: Path, *, root: Path | None = None) -> list[str]:
             if not in_fence:
                 in_fence = True
                 fence_char, fence_len = char, length
+                fence_open_line = lineno
                 continue
             if char == fence_char and length >= fence_len:
                 in_fence = False
-                fence_char, fence_len = "", 0
+                fence_char, fence_len, fence_open_line = "", 0, 0
                 continue
         if in_fence:
             continue
@@ -92,6 +94,8 @@ def typographic_dash_hits(path: Path, *, root: Path | None = None) -> list[str]:
             name = NAMES.get(char)
             if name is not None:
                 hits.append(f"{label}:{lineno}: {name}")
+    if in_fence:
+        hits.append(f"{label}:{fence_open_line}: unclosed fenced code block")
     return hits
 
 
