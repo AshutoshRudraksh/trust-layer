@@ -23,6 +23,10 @@ class UnapprovedExecutionError(PermissionError):
     """Raised when an external write is executed without an explicit approval decision."""
 
 
+class ApprovalNotPendingError(PermissionError):
+    """Raised when decide() is called on an approval that is no longer PENDING."""
+
+
 EXTERNAL_SEND_ACTION_TYPES = frozenset(
     {
         "send_email",
