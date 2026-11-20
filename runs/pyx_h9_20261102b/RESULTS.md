@@ -131,7 +131,7 @@ memory but whose row append a watchdog kill interrupted; the metrics
 match because the final invocation graded it). The stated limit:
 where an interrupted log holds duplicate executions of one call with
 different replies, no replay rule reassigns every detail row exactly
-as the live run consumed them. The verdict layer is what reproduces.
+as the live run consumed them. The verdict layer is what reproduces. answers.jsonl and candidates_r2_planted.jsonl are also expected to differ on rerun.
 
 H9g record notes. Under the per attempt deadline, a timed out
 attempt's thread is never actually stopped (the documented daemon

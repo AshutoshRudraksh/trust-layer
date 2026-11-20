@@ -8,6 +8,7 @@ from .approval_gate import (
     DraftOnlyViolationError,
     ExecutionResult,
     UnapprovedExecutionError,
+    ApprovalNotPendingError,
 )
 
 __all__ = [
@@ -20,4 +21,5 @@ __all__ = [
     "DraftOnlyViolationError",
     "ExecutionResult",
     "UnapprovedExecutionError",
+    "ApprovalNotPendingError",
 ]
