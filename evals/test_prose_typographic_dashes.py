@@ -16,6 +16,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 EM = "\u2014"
 EN = "\u2013"
+FIGURE = "\u2012"
+HORIZONTAL = "\u2015"
+MINUS = "\u2212"
 NAMES = {EM: "em dash (U+2014)", EN: "en dash (U+2013)"}
 FENCE = re.compile(r"^( {0,3})(`{3,}|~{3,})")
 URL = re.compile(r"https?://[^\s<>)'\"]+")
@@ -183,3 +186,16 @@ def test_closing_fence_may_have_trailing_whitespace(tmp_path: Path) -> None:
     path = tmp_path / "sample.md"
     path.write_text("```\ncode\n```  \nprose\n", encoding="utf-8")
     assert typographic_dash_hits(path) == []
+
+
+def test_scanner_reports_figure_dash_horizontal_bar_and_minus_sign(tmp_path: Path) -> None:
+    path = tmp_path / "sample.md"
+    path.write_text(
+        f"a {FIGURE} b\nc {HORIZONTAL} d\ne {MINUS} f\n",
+        encoding="utf-8",
+    )
+    assert typographic_dash_hits(path) == [
+        "sample.md:1: figure dash (U+2012)",
+        "sample.md:2: horizontal bar (U+2015)",
+        "sample.md:3: minus sign (U+2212)",
+    ]
