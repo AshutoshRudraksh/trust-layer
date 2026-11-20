@@ -1,12 +1,14 @@
-"""Fail if README or docs prose uses an em dash or an en dash.
+"""Fail if tracked markdown prose uses a typographic dash.
 
-The house rule forbids U+2014 and U+2013 in repo prose. This file is the
-enforcement. Scope is README.md and every markdown file under docs/, which is
-where that prose lives. Spaced ASCII hyphens are out of scope: skipping list
+The house rule forbids U+2012, U+2013, U+2014, U+2015, and U+2212 in repo
+prose. This file is the enforcement. Scope is every tracked *.md file from
+git ls-files, except the three frozen source paper copies listed in
+EXCLUDED_MARKDOWN. Spaced ASCII hyphens are out of scope: skipping list
 markers and tables still leaves too many legitimate mid-sentence uses, and
 the dash that slipped in was typographic. Fenced code blocks, inline code
 spans, and URLs are skipped so a character inside a command or a link does
-not fail the test.
+not fail the test. Indented code blocks and HTML are scanned as prose, which
+fails safe.
 """
 from __future__ import annotations
 
@@ -50,7 +52,8 @@ LINK_DEST = re.compile(r"\]\([^)]*\)")
 
 
 def prose_markdown_files() -> list[Path]:
-    return [ROOT / "README.md", *sorted((ROOT / "docs").rglob("*.md"))]
+    excluded = set(EXCLUDED_MARKDOWN)
+    return [ROOT / rel for rel in tracked_markdown_files() if rel not in excluded]
 
 
 def _mask_code_spans(line: str) -> str:
@@ -162,7 +165,7 @@ def test_scanner_ignores_dashes_in_code_spans_urls_and_fenced_blocks(tmp_path: P
     assert typographic_dash_hits(path) == []
 
 
-def test_readme_and_docs_contain_no_typographic_dashes() -> None:
+def test_tracked_markdown_prose_contains_no_typographic_dashes() -> None:
     found: list[str] = []
     for path in prose_markdown_files():
         found.extend(typographic_dash_hits(path, root=ROOT))
