@@ -4,6 +4,10 @@
 
 **Every lesson stands trial.**
 
+When an AI agent gets a task wrong, it writes down what it learned.
+That note is a lesson. Pyx decides whether another agent is allowed
+to use that note.
+
 Pyx is a gate for agent memory. Agents that learn from experience
 usually remember whatever they produce, including the wrong lessons,
 the lucky ones, and the poisoned ones. Pyx does not let an agent
