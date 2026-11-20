@@ -19,7 +19,13 @@ EN = "\u2013"
 FIGURE = "\u2012"
 HORIZONTAL = "\u2015"
 MINUS = "\u2212"
-NAMES = {EM: "em dash (U+2014)", EN: "en dash (U+2013)"}
+NAMES = {
+    FIGURE: "figure dash (U+2012)",
+    EN: "en dash (U+2013)",
+    EM: "em dash (U+2014)",
+    HORIZONTAL: "horizontal bar (U+2015)",
+    MINUS: "minus sign (U+2212)",
+}
 FENCE = re.compile(r"^( {0,3})(`{3,}|~{3,})")
 URL = re.compile(r"https?://[^\s<>)'\"]+")
 LINK_DEST = re.compile(r"\]\([^)]*\)")
