@@ -153,3 +153,28 @@ def test_scanner_reports_unclosed_fence(tmp_path: Path) -> None:
     assert typographic_dash_hits(path) == [
         "sample.md:1: unclosed fenced code block",
     ]
+
+
+def test_closing_fence_with_trailing_text_does_not_close(tmp_path: Path) -> None:
+    path = tmp_path / "sample.md"
+    path.write_text(
+        "\n".join(
+            [
+                "```",
+                "code",
+                "``` trailing",
+                f"prose {EM} still in the fence",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    assert typographic_dash_hits(path) == [
+        "sample.md:1: unclosed fenced code block",
+    ]
+
+
+def test_closing_fence_may_have_trailing_whitespace(tmp_path: Path) -> None:
+    path = tmp_path / "sample.md"
+    path.write_text("```\ncode\n```  \nprose\n", encoding="utf-8")
+    assert typographic_dash_hits(path) == []
